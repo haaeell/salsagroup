@@ -15,48 +15,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
-<style>
-    .search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        border: 1px solid #ccc;
-        border-radius: 0 0 10px 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        z-index: 1001;
-    }
-
-    .search-result-item {
-        padding: 10px;
-        cursor: pointer;
-    }
-
-    .search-result-item:hover {
-        background-color: #f0f0f0;
-    }
-
-    .search-container {
-        position: relative;
-    }
-</style>
-
 <body>
-    <div class="overlay" id="overlay"></div>
-    <nav class="navbar navbar-expand-lg ">
+    <nav class="navbar navbar-expand-lg shadow p-3">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#"></a>
+            <div class="d-none d-lg-block" style="width: 120px;"></div>
+
+            <a class="navbar-brand fw-bold mx-auto" href="#">SALSA Group</a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+
+            {{-- Menu kanan --}}
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
                     @if (Route::has('login'))
                         @auth
                             <li class="nav-item">
-                                <a class="btn btn-dark rounded-5 px-4 py-2" href="{{ route('logout') }}"
+                                <a class="btn btn-danger rounded-5 px-4 py-2" href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
@@ -66,9 +43,8 @@
                             </li>
                         @else
                             <li class="nav-item">
-                                <a class="btn btn-dark rounded-5 px-4 py-2" href="{{ route('login') }}">Masuk</a>
+                                <a class="btn btn-danger rounded-5 px-4 py-2" href="{{ route('login') }}">Masuk</a>
                             </li>
-
                             @if (Route::has('register'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ url('/register') }}">Register</a>
@@ -80,7 +56,6 @@
             </div>
         </div>
     </nav>
-
 
     @yield('content')
 

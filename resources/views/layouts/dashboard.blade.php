@@ -59,9 +59,13 @@
                             <div class="d-sm-none d-lg-inline-block">{{ Auth::user()->name }}</div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+
+                            <a class="dropdown-item" href="{{ route('account.setting') }}">
+                                <i class="fa fa-user-cog mr-2"></i> Setting Account
+                            </a>
                             <a class="dropdown-item" href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                {{ __('Logout') }}
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf
@@ -78,7 +82,7 @@
         <div class="main-content">
             <section class="section">
                 <div class="section-header">
-                    <h1>@yield('judul')</h1>
+                    <h1>@yield('title')</h1>
                 </div>
 
             </section>
@@ -104,17 +108,10 @@
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>
-    @yield('scripts')
 
-
-    <!-- General JS Scripts -->>
-
-
-    <!-- JavaScript Select2 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
         integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
@@ -189,7 +186,7 @@
             });
         </script>
     @endif
-    @yield('scripts')
+    @stack('scripts')
 
 
 
