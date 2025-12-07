@@ -24,6 +24,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('kategori', KategoriController::class);
     Route::resource('barang', BarangController::class);
     Route::resource('barang-masuk', BarangMasukController::class);
+    Route::get('/pesanan/struk/{id}', [PesananController::class, 'struk'])->name('pesanan.struk');
+
     Route::resource('pesanan', PesananController::class);
     Route::resource('users', UserController::class);
 

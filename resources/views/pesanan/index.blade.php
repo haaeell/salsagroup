@@ -4,7 +4,6 @@
 
 @section('content')
     <div class="row">
-        <!-- Kiri: List Produk -->
         <div class="col-md-8">
             <div class="mb-3 d-flex justify-content-between">
                 <input type="text" id="searchInput" class="form-control w-50 mr-3" placeholder="🔍 Cari Produk">
@@ -314,9 +313,8 @@
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
                             success: function(res) {
-                                showStruk(data, cart);
-                                cart = {};
-                                updateCartTable();
+                                window.location.href = "/pesanan/struk/" + res
+                                    .pesanan_id;
                             },
                             error: function(err) {
                                 Swal.fire('Error', err.responseJSON.message, 'error');

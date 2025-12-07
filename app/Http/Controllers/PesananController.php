@@ -29,7 +29,7 @@ class PesananController extends Controller
             'items.*.jumlah' => 'required|integer|min:1',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $pesanan = DB::transaction(function () use ($request) {
             $orderId = 'ORD-' . time();
             $totalHarga = 0;
 
@@ -66,9 +66,14 @@ class PesananController extends Controller
             }
 
             $pesanan->update(['total_harga' => $totalHarga]);
+
+            return $pesanan;
         });
 
-        return redirect()->back()->with('success', 'Pesanan berhasil dibuat');
+        return response()->json([
+            'success' => true,
+            'pesanan_id' => $pesanan->id
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -112,5 +117,12 @@ class PesananController extends Controller
             ->get();
 
         return response()->json($barang);
+    }
+
+    public function struk($id)
+    {
+        $pesanan = Pesanan::with('detailPesanan.barang')->findOrFail($id);
+
+        return view('pesanan.struk', compact('pesanan'));
     }
 }
