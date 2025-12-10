@@ -82,14 +82,23 @@ class PesananController extends Controller
 
         $request->validate([
             'status' => 'required|in:batal,selesai',
+            'bukti_pembayaran' => 'nullable|image|max:2048', // ⬅️ Validasi upload
         ]);
 
-        $pesanan->update([
+        $data = [
             'status' => $request->status,
-        ]);
+        ];
+
+        if ($request->hasFile('bukti_pembayaran')) {
+            $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+            $data['bukti_pembayaran'] = $path;
+        }
+
+        $pesanan->update($data);
 
         return redirect()->back()->with('success', 'Status pesanan berhasil diperbarui');
     }
+
 
     public function destroy($id)
     {

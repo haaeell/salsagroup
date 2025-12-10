@@ -16,7 +16,8 @@ class Pesanan extends Model
         'total_harga',
         'status',
         'tanggal',
-        'catatan'
+        'catatan',
+        'bukti_pembayaran',
     ];
 
     public function user()

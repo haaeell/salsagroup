@@ -78,6 +78,20 @@
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="mb-3">
+                                                            <label class="form-label">Harga Beli <span
+                                                                    class="text-danger">*</span></label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i
+                                                                        class="bi bi-cash"></i></span>
+                                                                <input type="number" name="harga_beli" class="form-control"
+                                                                    value="{{ $item->harga_beli }}" min="0"
+                                                                    required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
                                                             <label class="form-label">Tanggal Masuk <span
                                                                     class="text-danger">*</span></label>
                                                             <div class="input-group">
@@ -183,6 +197,16 @@
                                     <input type="number" name="jumlah" class="form-control" min="1" required>
                                 </div>
                             </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Harga Beli <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-cash"></i></span>
+                                    <input type="number" name="harga_beli" class="form-control" min="0"
+                                        required>
+                                </div>
+                            </div>
+
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Tanggal Masuk <span class="text-danger">*</span></label>
                                 <div class="input-group">

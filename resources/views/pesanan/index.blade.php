@@ -3,6 +3,35 @@
 @section('title', 'Pesanan')
 
 @section('content')
+    <style>
+        /* PRINT MODE */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible !important;
+            }
+
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 250px !important;
+            }
+        }
+
+        #printArea table {
+            font-size: 12px;
+        }
+
+        #printArea hr {
+            border-top: 1px dashed #999;
+        }
+    </style>
+
     <div class="row">
         <div class="col-md-8">
             <div class="mb-3 d-flex justify-content-between">
@@ -107,20 +136,33 @@
     </div>
 
     <!-- Modal Struk -->
-    <div class="modal fade" id="strukModal" tabindex="-1" aria-labelledby="strukModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Struk Pembelian</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal fade" id="strukModal" tabindex="-1">
+        <div class="modal-dialog modal-sm"> <!-- kecil seperti struk -->
+            <div class="modal-content p-3" id="printArea" style="font-size: 13px;">
+
+                <div class="text-center mb-2">
+                    <h6 class="fw-bold m-0">SALSA GROUP</h6>
+                    <small class="text-muted">Jl. Lampung No.12</small>
+                    <hr class="my-2">
                 </div>
-                <div class="modal-body" id="strukContent">
-                    <!-- Isi struk akan dimasukkan via JS -->
+
+                <div id="strukContent"></div>
+
+                <hr class="my-2">
+                <div class="text-center">
+                    <small>Terima kasih 🙏</small><br>
+                    <small>Barang yang sudah dibeli tidak dapat dikembalikan</small>
                 </div>
-                <div class="modal-footer">
-                    <button onclick="window.print()" class="btn btn-primary"><i class="bi bi-printer"></i> Cetak</button>
-                    <button class="btn btn-secondary" id="btnTutup">Tutup</button>
+
+                <div class="mt-3 d-flex justify-content-between">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Tutup
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="printStruk()">
+                        <i class="bi bi-printer"></i> Cetak
+                    </button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -130,6 +172,12 @@
 @push('scripts')
     <script>
         let cart = {};
+
+
+
+        function printStruk() {
+            window.print();
+        }
 
         function updateCartTable() {
             const $cartItems = $('#cartItems');
@@ -313,9 +361,20 @@
                                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                             },
                             success: function(res) {
-                                window.location.href = "/pesanan/struk/" + res
-                                    .pesanan_id;
+                                const pesananId = res.pesanan_id;
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Pesanan Berhasil Dibuat!',
+                                    text: 'Struk akan tampil setelah ini.',
+                                    timer: 1800,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    showStruk(res, cart);
+                                });
+                                cart = {};
+                                updateCartTable();
                             },
+
                             error: function(err) {
                                 Swal.fire('Error', err.responseJSON.message, 'error');
                                 console.error(err);
@@ -341,29 +400,41 @@
             // Tampilkan struk
             function showStruk(data, keranjang) {
                 let html = `
-        <h6><strong>Nama:</strong> {{ Auth::user()->username }}</h6>
-        <h6><strong>No. HP:</strong>{{ Auth::user()->no_telepon }}</h6>
-        <h6><strong>Alamat:</strong> {{ Auth::user()->alamat }}</h6>
+        <div class="mb-2">
+            <strong>Kasir:</strong> {{ Auth::user()->username }} <br>
+            <strong>Tanggal:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i') }}
+        </div>
         <hr>
-        <table class="table table-bordered">
-            <thead><tr><th>Barang</th><th>Jumlah</th><th>Harga</th><th>Subtotal</th></tr></thead>
-            <tbody>`;
+        <table class="table table-borderless">
+            <tbody>
+    `;
+
                 let total = 0;
+
                 $.each(keranjang, (id, item) => {
                     const subtotal = item.jumlah * item.harga;
                     total += subtotal;
-                    html += `<tr>
-                                <td>${item.nama}</td>
-                                <td>${item.jumlah}</td>
-                                <td>Rp ${item.harga.toLocaleString('id-ID')}</td>
-                                <td>Rp ${subtotal.toLocaleString('id-ID')}</td>
-                            </tr>`;
-                });
-                html += `</tbody></table>
-                            <h5 class="text-end">Total: Rp ${total.toLocaleString('id-ID')}</h5>`;
 
-                $('#strukContent').html(html);
-                $('#strukModal').modal('show');
+                    html += `
+            <tr>
+                <td colspan="3"><strong>${item.nama}</strong></td>
+            </tr>
+            <tr>
+                <td>${item.jumlah} x Rp ${item.harga.toLocaleString('id-ID')}</td>
+                <td class="text-end">Rp ${subtotal.toLocaleString('id-ID')}</td>
+            </tr>
+        `;
+                });
+
+                html += `
+            </tbody>
+        </table>
+        <hr>
+        <h6 class="text-end fw-bold">TOTAL: Rp ${total.toLocaleString('id-ID')}</h6>
+    `;
+
+                $("#strukContent").html(html);
+                $("#strukModal").modal("show");
             }
         });
     </script>
