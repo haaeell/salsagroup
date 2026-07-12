@@ -61,11 +61,12 @@
                                         data-bs-target="#modalDone{{ $item->id }}">
                                         <i class="fa fa-check"></i> Selesaikan
                                     </button>
-                                @elseif ($item->status == 'selesai')
                                     <button class="btn btn-warning" data-bs-toggle="modal"
                                         data-bs-target="#modalCancel{{ $item->id }}">
                                         <i class="fa fa-times"></i> Batalkan
                                     </button>
+                                @elseif ($item->status == 'selesai')
+                                    <p class="text-success mb-0"><i class="fa fa-check"></i> Pesanan Selesai</p>
                                 @else
                                     <p class="text-danger"><i class="fa fa-times"></i> Pesanan Batal</p>
                                 @endif
