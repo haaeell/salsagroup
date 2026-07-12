@@ -327,10 +327,8 @@ $(function() {
     container: 'body'
   });
 
-  // Select2
-  if(jQuery().select2) {
-    $(".select2").select2();
-  }
+  // Select2 (initialized centrally in layouts/dashboard.blade.php so modal dropdowns
+  // get the correct dropdownParent; do not re-init here)
 
   // Selectric
   if(jQuery().selectric) {

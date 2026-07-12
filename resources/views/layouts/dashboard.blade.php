@@ -125,8 +125,41 @@
 
     <!-- JS Libraies -->
     <script>
+        function initSelect2(context) {
+            $(context).find('.select2').addBack('.select2').each(function() {
+                var $el = $(this);
+                var inModal = $el.closest('.modal').length > 0;
+
+                if (inModal) {
+                    // Selects inside a Bootstrap modal must not be initialized while the
+                    // modal is display:none (Select2 misreads its options as empty), so
+                    // they're deferred to shown.bs.modal below instead.
+                    return;
+                }
+
+                if ($el.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+
+                $el.select2();
+            });
+        }
+
         $(document).ready(function() {
-            $('.select2').select2();
+            initSelect2(document);
+
+            $('.modal').on('shown.bs.modal', function() {
+                var $modal = $(this);
+                $modal.find('.select2').each(function() {
+                    var $el = $(this);
+                    if ($el.hasClass('select2-hidden-accessible')) {
+                        $el.select2('destroy');
+                    }
+                    $el.select2({
+                        dropdownParent: $modal
+                    });
+                });
+            });
         });
     </script>
 

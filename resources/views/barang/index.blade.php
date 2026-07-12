@@ -274,6 +274,23 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
+                                <label class="form-label">Stok Awal</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-cart"></i></span>
+                                    <input type="number" name="stok_awal" class="form-control" min="0"
+                                        value="0">
+                                </div>
+                                <small class="text-muted">Kosongkan/isi 0 jika belum ada stok masuk.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Harga Beli</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" name="harga_beli_awal" class="form-control" min="0">
+                                </div>
+                                <small class="text-muted">Wajib diisi jika Stok Awal &gt; 0.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Gambar</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-image"></i></span>
