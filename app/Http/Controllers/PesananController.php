@@ -218,11 +218,18 @@ class PesananController extends Controller
     public function cari(Request $request)
     {
         $query = $request->q;
+        $kategoriId = $request->kategori_id;
 
-        $barang = Barang::with('kategori')->when($query, function ($q) use ($query) {
-            $q->where('nama', 'like', '%' . $query . '%')
-                ->orWhere('kode', 'like', '%' . $query . '%');
-        })
+        $barang = Barang::with('kategori')
+            ->when($query, function ($q) use ($query) {
+                $q->where(function ($q) use ($query) {
+                    $q->where('nama', 'like', '%' . $query . '%')
+                        ->orWhere('kode', 'like', '%' . $query . '%');
+                });
+            })
+            ->when($kategoriId, function ($q) use ($kategoriId) {
+                $q->where('kategori_id', $kategoriId);
+            })
             ->take(6)
             ->get();
 

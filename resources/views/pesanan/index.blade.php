@@ -251,43 +251,21 @@
                 updateCartTable();
             });
 
-            // Filter Kategori
-            $('#filterKategori').on('change', function() {
-                const q = $(this).val();
+            // Filter Kategori + Pencarian (gabungan)
+            function cariProduk() {
+                const q = $('#searchInput').val();
+                const kategoriId = $('#filterKategori').val();
 
-                if (q.trim() === '') {
-                    $.get("{{ route('produk.cari') }}", {
-                        q: ''
-                    }, function(res) {
-                        renderProduk(res);
-                    });
-                    return;
-                }
                 $.get("{{ route('produk.cari') }}", {
-                    q
+                    q: q,
+                    kategori_id: kategoriId
                 }, function(res) {
                     renderProduk(res);
                 });
-            });
+            }
 
-            // Pencarian
-            $('#searchInput').on('keyup', function() {
-                const q = $(this).val();
-
-                if (q.trim() === '') {
-                    $.get("{{ route('produk.cari') }}", {
-                        q: ''
-                    }, function(res) {
-                        renderProduk(res);
-                    });
-                    return;
-                }
-                $.get("{{ route('produk.cari') }}", {
-                    q
-                }, function(res) {
-                    renderProduk(res);
-                });
-            });
+            $('#filterKategori').on('change', cariProduk);
+            $('#searchInput').on('keyup', cariProduk);
 
             function renderProduk(res) {
                 let html = '';
