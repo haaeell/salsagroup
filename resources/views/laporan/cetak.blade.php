@@ -107,8 +107,52 @@
                 @endforeach
             </tbody>
         </table>
+    @elseif (($jenis ?? '') === 'pembelian')
+        <h4 style="text-align: center;">Laporan Pembelian Barang</h4>
+        <p>Periode: {{ date('d/m/Y', strtotime($dari)) }} - {{ date('d/m/Y', strtotime($sampai)) }}</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Tanggal</th>
+                    <th>Kode</th>
+                    <th>Nama Barang</th>
+                    <th>Jumlah</th>
+                    <th>Harga Beli</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php
+                    $no = 1;
+                    $grandTotal = 0;
+                @endphp
+                @foreach ($data as $item)
+                    @php
+                        $total = $item->jumlah * $item->harga_beli;
+                        $grandTotal += $total;
+                    @endphp
+                    <tr>
+                        <td>{{ $no++ }}</td>
+                        <td>{{ date('d/m/Y', strtotime($item->tanggal_masuk)) }}</td>
+                        <td>{{ $item->barang->kode ?? '-' }}</td>
+                        <td>{{ $item->barang->nama ?? '-' }}</td>
+                        <td>{{ $item->jumlah }}</td>
+                        <td>Rp.{{ number_format($item->harga_beli, 0, ',', '.') }}</td>
+                        <td>Rp.{{ number_format($total, 0, ',', '.') }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" class="text-right">Total</th>
+                    <th>Rp.{{ number_format($grandTotal, 0, ',', '.') }}</th>
+                </tr>
+            </tfoot>
+        </table>
     @else
-        <h4 style="text-align: center;">Laporan {{ ucfirst($jenis) }} Barang</h4>
+        <h4 style="text-align: center;">Laporan Pemesanan Barang</h4>
         <p>Periode: {{ date('d/m/Y', strtotime($dari)) }} - {{ date('d/m/Y', strtotime($sampai)) }}</p>
 
         <table>

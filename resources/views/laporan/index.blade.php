@@ -219,11 +219,9 @@
                         <select name="jenis" id="jenis" class="form-control select2" required>
                             <option value="">*Pilih Laporan*</option>
                             <option value="pemesanan" {{ $jenis == 'pemesanan' ? 'selected' : '' }}>
-                                Pemesanan (Proses)</option>
+                                Pemesanan</option>
                             <option value="pembelian" {{ $jenis == 'pembelian' ? 'selected' : '' }}>
-                                Pembelian (Selesai)</option>
-                            <option value="barang_masuk" {{ $jenis == 'barang_masuk' ? 'selected' : '' }}>
-                                Barang Masuk</option>
+                                Pembelian</option>
                         </select>
                     </div>
                     <div class="col-md-2 period-filter">
@@ -383,7 +381,7 @@
                         </div>
                     </div>
                 </div>
-            @elseif ($jenis !== 'barang_masuk')
+            @elseif ($jenis !== 'pembelian')
                 <div class="row stats-grid">
                     <div class="col-xl-4 col-md-6 mb-4">
                         <div class="stat-tile">
@@ -412,7 +410,7 @@
                                 {{ number_format($summary['total_pendapatan'], 0, ',', '.') }}</div>
                         </div>
                     </div>
-                    @if ($jenis === 'pembelian')
+                    @if ($jenis === 'pemesanan')
                         <div class="col-xl-4 col-md-6 mb-4">
                             <div class="stat-tile">
                                 <div class="stat-head">
@@ -548,6 +546,20 @@
                                 {{ number_format($summary['total_item_terjual'], 0, ',', '.') }}</div>
                         </div>
                     </div>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="stat-tile">
+                            <div class="stat-head">
+                                <div class="stat-copy">
+                                    <div class="stat-label">Total Pembelian</div>
+                                    <div class="stat-note">Akumulasi harga beli barang masuk</div>
+                                </div>
+                                <div class="stat-icon" style="background: var(--series-2);"><i
+                                        class="bi bi-cash-stack"></i></div>
+                            </div>
+                            <div class="stat-value currency">Rp
+                                {{ number_format($summary['total_pendapatan'], 0, ',', '.') }}</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="row g-3 mb-4">
@@ -568,7 +580,7 @@
                     <h5 class="mb-0">
                         {{ $mode === 'tahunan' ? 'Detail Laporan Tahunan' : 'Detail ' . ucfirst(str_replace('_', ' ', $jenis)) }}
                     </h5>
-                    @if ($mode === 'periode' && $jenis !== 'barang_masuk')
+                    @if ($mode === 'periode')
                         <a href="{{ route('laporan.cetak', ['mode' => $mode, 'jenis' => $jenis, 'dari' => $dari, 'sampai' => $sampai]) }}"
                             target="_blank" class="btn btn-success">
                             <i class="fa fa-print"></i> Cetak Laporan
@@ -576,14 +588,17 @@
                     @endif
                 </div>
                 <div class="card-body table-responsive">
-                    @if ($jenis === 'barang_masuk')
+                    @if ($jenis === 'pembelian')
                         <table class="table table-bordered align-middle" id="datatable">
                             <thead class="table-light">
                                 <tr class="text-center">
                                     <th>No</th>
                                     <th>Tanggal</th>
+                                    <th>Kode</th>
                                     <th>Nama Barang</th>
                                     <th>Jumlah</th>
+                                    <th>Harga Beli</th>
+                                    <th>Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -591,11 +606,20 @@
                                     <tr class="text-start">
                                         <td>{{ $i + 1 }}</td>
                                         <td>{{ date('d/m/Y', strtotime($item->tanggal_masuk)) }}</td>
+                                        <td>{{ $item->barang->kode ?? '-' }}</td>
                                         <td>{{ $item->barang->nama ?? '-' }}</td>
                                         <td>{{ $item->jumlah }}</td>
+                                        <td>Rp.{{ number_format($item->harga_beli, 0, ',', '.') }}</td>
+                                        <td>Rp.{{ number_format($item->jumlah * $item->harga_beli, 0, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="6" class="text-end">Total:</th>
+                                    <th>Rp.{{ number_format($summary['total_pendapatan'], 0, ',', '.') }}</th>
+                                </tr>
+                            </tfoot>
                         </table>
                     @else
                         <table class="table table-bordered align-middle" id="datatable">
@@ -608,7 +632,7 @@
                                     <th>Jumlah</th>
                                     <th>Harga Satuan</th>
                                     <th>Total Harga</th>
-                                    @if ($jenis === 'pembelian')
+                                    @if ($jenis === 'pemesanan')
                                         <th>Laba</th>
                                     @endif
                                 </tr>
@@ -625,7 +649,7 @@
                                             <td>{{ $detail->jumlah }}</td>
                                             <td>Rp.{{ number_format($detail->harga, 0, ',', '.') }}</td>
                                             <td>Rp.{{ number_format($detail->jumlah * $detail->harga, 0, ',', '.') }}</td>
-                                            @if ($jenis === 'pembelian')
+                                            @if ($jenis === 'pemesanan')
                                                 <td>Rp.{{ number_format($detail->jumlah * ($detail->harga - $detail->harga_modal), 0, ',', '.') }}
                                                 </td>
                                             @endif
@@ -637,7 +661,7 @@
                                 <tr>
                                     <th colspan="6" class="text-end">Total:</th>
                                     <th>Rp.{{ number_format($summary['total_pendapatan'], 0, ',', '.') }}</th>
-                                    @if ($jenis === 'pembelian')
+                                    @if ($jenis === 'pemesanan')
                                         <th>Rp.{{ number_format($summary['total_laba'], 0, ',', '.') }}</th>
                                     @endif
                                 </tr>
@@ -686,7 +710,7 @@
                 });
 
                 if (isTahunan && jenisSelect) {
-                    jenisSelect.value = 'pembelian';
+                    jenisSelect.value = 'pemesanan';
                     if (window.jQuery) {
                         window.jQuery(jenisSelect).trigger('change');
                     }
@@ -797,7 +821,7 @@
                         data: {
                             labels: trendLabels,
                             datasets: [{
-                                label: '{{ $jenis === 'barang_masuk' ? 'Jumlah Masuk' : 'Pendapatan' }}',
+                                label: '{{ $jenis === 'pembelian' ? 'Jumlah Masuk' : 'Pendapatan' }}',
                                 data: trend.map(r => r.total),
                                 borderColor: colors.series1,
                                 backgroundColor: colors.series1 + '1a',
@@ -820,7 +844,7 @@
                                     callbacks: {
                                         label: function(ctx) {
                                             const val = ctx.parsed.y;
-                                            return '{{ $jenis === 'barang_masuk' ? '' : 'Rp ' }}' + val
+                                            return '{{ $jenis === 'pembelian' ? '' : 'Rp ' }}' + val
                                                 .toLocaleString('id-ID');
                                         }
                                     }
@@ -847,7 +871,7 @@
                         }
                     });
 
-                    @if ($jenis !== 'barang_masuk')
+                    @if ($jenis !== 'pembelian')
                         const kategoriData = @json($kategoriBreakdown);
                         new Chart(document.getElementById('chartKategori'), {
                             type: 'doughnut',

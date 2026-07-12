@@ -47,7 +47,7 @@
                     </a>
                 </li>
                 <li class="{{ request()->is('laporan') && request('mode') === 'tahunan' ? 'active' : '' }}">
-                    <a href="{{ route('laporan.index', ['mode' => 'tahunan', 'jenis' => 'pembelian']) }}"
+                    <a href="{{ route('laporan.index', ['mode' => 'tahunan', 'jenis' => 'pemesanan']) }}"
                         class="nav-link">
                         <i class="bi bi-bar-chart-line"></i>
                         <span>Laporan Tahunan</span>

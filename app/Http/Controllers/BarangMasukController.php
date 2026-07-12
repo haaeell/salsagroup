@@ -60,7 +60,7 @@ class BarangMasukController extends Controller
             }
 
             if ((int) $request->barang_id !== (int) $barangMasuk->barang_id && $jumlahTerpakai > 0) {
-                abort(422, 'Barang tidak bisa diganti karena batch ini sudah dipakai transaksi FIFO.');
+                abort(422, 'Barang tidak bisa diganti karena stok dari data ini sudah dipakai transaksi.');
             }
 
             $barangLama = Barang::findOrFail($barangMasuk->barang_id);

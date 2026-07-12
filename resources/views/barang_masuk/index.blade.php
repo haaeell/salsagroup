@@ -17,9 +17,10 @@
                     <thead>
                         <tr>
                             <th>No</th>
+                            <th>Kode</th>
                             <th>Nama Barang</th>
                             <th>Jumlah</th>
-                            <th>Sisa FIFO</th>
+                            <th>Sisa Stok</th>
                             <th>Harga Beli</th>
                             <th>Tanggal Masuk</th>
                             <th>Aksi</th>
@@ -29,6 +30,7 @@
                         @foreach ($barangMasuk as $key => $item)
                             <tr>
                                 <td>{{ $key + 1 }}</td>
+                                <td>{{ $item->barang->kode ?? '-' }}</td>
                                 <td>{{ $item->barang->nama }}</td>
                                 <td>{{ $item->jumlah }}</td>
                                 <td>{{ $item->remaining_jumlah }}</td>
@@ -73,7 +75,7 @@
                                                                         @foreach ($barang as $brg)
                                                                             <option value="{{ $brg->id }}"
                                                                                 {{ $brg->id == $item->barang_id ? 'selected' : '' }}>
-                                                                                {{ $brg->nama }}</option>
+                                                                                {{ $brg->kode }} - {{ $brg->nama }}</option>
                                                                         @endforeach
                                                                     </select>
                                                                 </div>
@@ -187,8 +189,8 @@
                                     <div class="flex-grow-1">
                                         <select name="barang_id" class="form-select select2 w-100" required>
                                             @foreach ($barang as $brg)
-                                                <option value="{{ $brg->id }}">{{ $brg->nama }} -
-                                                    {{ $brg->kode }}</option>
+                                                <option value="{{ $brg->id }}">{{ $brg->kode }} -
+                                                    {{ $brg->nama }}</option>
                                             @endforeach
                                         </select>
                                     </div>

@@ -15,12 +15,13 @@ class LaporanController extends Controller
     public function index(Request $request)
     {
         $mode = $request->mode ?? 'periode';
-        $jenis = $request->jenis ?? 'pembelian';
-        $jenis = $mode === 'tahunan' ? 'pembelian' : $jenis;
+        $jenis = $request->jenis ?? 'pemesanan';
+        $jenis = $mode === 'tahunan' ? 'pemesanan' : $jenis;
         $dari = $request->dari ?? now()->startOfMonth()->format('Y-m-d');
         $sampai = $request->sampai ?? now()->endOfMonth()->format('Y-m-d');
         $tahun = (int) ($request->tahun ?? now()->year);
-        $bulanDipilih = collect($request->bulan ?? [now()->month])
+        $bulanDefault = $mode === 'tahunan' ? range(1, 12) : [now()->month];
+        $bulanDipilih = collect($request->bulan ?? $bulanDefault)
             ->map(fn($bulan) => (int) $bulan)
             ->filter(fn($bulan) => $bulan >= 1 && $bulan <= 12)
             ->unique()
@@ -57,12 +58,12 @@ class LaporanController extends Controller
     public function cetak(Request $request)
     {
         $mode = $request->mode ?? 'periode';
-        $jenis = $request->jenis ?? 'pembelian';
-        $jenis = $mode === 'tahunan' ? 'pembelian' : $jenis;
+        $jenis = $request->jenis ?? 'pemesanan';
+        $jenis = $mode === 'tahunan' ? 'pemesanan' : $jenis;
 
         if ($mode === 'tahunan') {
             $tahun = (int) ($request->tahun ?? now()->year);
-            $bulanDipilih = collect($request->bulan ?? [now()->month])
+            $bulanDipilih = collect($request->bulan ?? range(1, 12))
                 ->map(fn($bulan) => (int) $bulan)
                 ->filter(fn($bulan) => $bulan >= 1 && $bulan <= 12)
                 ->unique()
@@ -105,15 +106,16 @@ class LaporanController extends Controller
         $topProduk = collect();
         $kategoriBreakdown = collect();
 
-        $status = $jenis === 'pembelian' ? 'selesai' : ($jenis === 'pemesanan' ? 'proses' : null);
+        $status = $jenis === 'pemesanan' ? 'selesai' : null;
 
-        if ($jenis === 'barang_masuk') {
+        if ($jenis === 'pembelian') {
             $data = BarangMasuk::with('barang')
                 ->whereBetween('tanggal_masuk', [$dari, $sampai])
                 ->get();
 
             $summary['total_pesanan'] = $data->count();
             $summary['total_item_terjual'] = $data->sum('jumlah');
+            $summary['total_pendapatan'] = $data->sum(fn($item) => $item->jumlah * $item->harga_beli);
 
             $trend = $data->groupBy(fn($item) => Carbon::parse($item->tanggal_masuk)->format('Y-m-d'))
                 ->map(fn($rows, $tanggal) => [
@@ -175,7 +177,7 @@ class LaporanController extends Controller
 
     private function buildAnnualReport(string $jenis, int $tahun, array $bulanDipilih): array
     {
-        $status = $jenis === 'pembelian' ? 'selesai' : ($jenis === 'pemesanan' ? 'proses' : null);
+        $status = $jenis === 'pemesanan' ? 'selesai' : null;
         $data = collect();
         $summary = $this->emptySummary();
         $annualReport = null;

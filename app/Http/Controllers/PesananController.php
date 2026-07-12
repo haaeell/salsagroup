@@ -276,7 +276,7 @@ class PesananController extends Controller
 
         if ($sisa > 0) {
             throw ValidationException::withMessages([
-                'stok' => 'Sisa batch FIFO untuk ' . $barang->nama . ' tidak mencukupi. Tambahkan data Barang Masuk terlebih dahulu.',
+                'stok' => 'Sisa stok masuk untuk ' . $barang->nama . ' tidak mencukupi. Tambahkan data Barang Masuk terlebih dahulu.',
             ]);
         }
 

@@ -19,7 +19,9 @@ class RiwayatPesananController extends Controller
             $pesanan = $pesanan->where('user_id', Auth::user()->id);
         }
 
-        $pesanan = $pesanan->get();
+        $pesanan = $pesanan->orderByDesc('tanggal')
+            ->orderByDesc('id')
+            ->get();
 
         $users = User::where('role', 'user')->get();
         $barang = Barang::all();
