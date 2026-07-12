@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Barang;
 use App\Models\BarangMasuk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BarangMasukController extends Controller
 {
@@ -24,25 +25,25 @@ class BarangMasukController extends Controller
             'tanggal_masuk' => 'required|date',
         ]);
 
-        BarangMasuk::create([
-            'barang_id' => $request->barang_id,
-            'jumlah' => $request->jumlah,
-            'harga_beli' => $request->harga_beli,
-            'tanggal_masuk' => $request->tanggal_masuk,
-        ]);
+        DB::transaction(function () use ($request) {
+            BarangMasuk::create([
+                'barang_id' => $request->barang_id,
+                'jumlah' => $request->jumlah,
+                'remaining_jumlah' => $request->jumlah,
+                'harga_beli' => $request->harga_beli,
+                'tanggal_masuk' => $request->tanggal_masuk,
+            ]);
 
-        // Update stok barang
-        $barang = Barang::findOrFail($request->barang_id);
-        $barang->stok += $request->jumlah;
-        $barang->save();
+            $barang = Barang::findOrFail($request->barang_id);
+            $barang->stok += $request->jumlah;
+            $barang->save();
+        });
 
         return redirect()->back()->with('success', 'Barang masuk berhasil ditambahkan');
     }
 
     public function update(Request $request, $id)
     {
-        $barangMasuk = BarangMasuk::findOrFail($id);
-
         $request->validate([
             'barang_id' => 'required|exists:barang,id',
             'jumlah' => 'required|numeric|min:1',
@@ -50,17 +51,35 @@ class BarangMasukController extends Controller
             'tanggal_masuk' => 'required|date',
         ]);
 
-        $barang = Barang::findOrFail($request->barang_id);
-        $barang->stok = $barang->stok - $barangMasuk->jumlah + $request->jumlah;
+        DB::transaction(function () use ($request, $id) {
+            $barangMasuk = BarangMasuk::lockForUpdate()->findOrFail($id);
+            $jumlahTerpakai = $barangMasuk->jumlah - $barangMasuk->remaining_jumlah;
 
-        $barang->save();
+            if ($request->jumlah < $jumlahTerpakai) {
+                abort(422, 'Jumlah barang masuk tidak boleh lebih kecil dari jumlah yang sudah terjual.');
+            }
 
-        $barangMasuk->update([
-            'barang_id'   => $request->barang_id,
-            'jumlah'      => $request->jumlah,
-            'harga_beli'  => $request->harga_beli,
-            'tanggal_masuk' => $request->tanggal_masuk,
-        ]);
+            if ((int) $request->barang_id !== (int) $barangMasuk->barang_id && $jumlahTerpakai > 0) {
+                abort(422, 'Barang tidak bisa diganti karena batch ini sudah dipakai transaksi FIFO.');
+            }
+
+            $barangLama = Barang::findOrFail($barangMasuk->barang_id);
+            $barangLama->stok -= $barangMasuk->remaining_jumlah;
+            $barangLama->save();
+
+            $remainingBaru = $request->jumlah - $jumlahTerpakai;
+            $barang = Barang::findOrFail($request->barang_id);
+            $barang->stok += $remainingBaru;
+            $barang->save();
+
+            $barangMasuk->update([
+                'barang_id'   => $request->barang_id,
+                'jumlah'      => $request->jumlah,
+                'remaining_jumlah' => $remainingBaru,
+                'harga_beli'  => $request->harga_beli,
+                'tanggal_masuk' => $request->tanggal_masuk,
+            ]);
+        });
 
         return redirect()->back()->with('success', 'Barang masuk berhasil diupdate');
     }
@@ -69,8 +88,12 @@ class BarangMasukController extends Controller
     {
         $barangMasuk = BarangMasuk::findOrFail($id);
 
+        if ($barangMasuk->remaining_jumlah < $barangMasuk->jumlah) {
+            return redirect()->back()->with('error', 'Barang masuk tidak bisa dihapus karena sebagian stoknya sudah terjual.');
+        }
+
         $barang = Barang::findOrFail($barangMasuk->barang_id);
-        $barang->stok -= $barangMasuk->jumlah;
+        $barang->stok -= $barangMasuk->remaining_jumlah;
         $barang->save();
 
         $barangMasuk->delete();

@@ -14,7 +14,12 @@ class DetailPesanan extends Model
         'nama_barang',
         'jumlah',
         'harga',
-        'harga_modal'
+        'harga_modal',
+        'fifo_layers'
+    ];
+
+    protected $casts = [
+        'fifo_layers' => 'array',
     ];
 
     public function pesanan()

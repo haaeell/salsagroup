@@ -214,7 +214,7 @@
                             <option value="tahunan" {{ $mode === 'tahunan' ? 'selected' : '' }}>Tahunan per Bulan</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 jenis-filter">
                         <label for="jenis" class="form-label">Jenis Laporan</label>
                         <select name="jenis" id="jenis" class="form-control select2" required>
                             <option value="">*Pilih Laporan*</option>
@@ -660,6 +660,7 @@
             const jenisSelect = document.getElementById('jenis');
             const periodFilters = document.querySelectorAll('.period-filter');
             const annualFilters = document.querySelectorAll('.annual-filter');
+            const jenisFilters = document.querySelectorAll('.jenis-filter');
 
             function toggleReportMode() {
                 const isTahunan = modeSelect && modeSelect.value === 'tahunan';
@@ -680,7 +681,11 @@
                     });
                 });
 
-                if (isTahunan && jenisSelect && jenisSelect.value === 'barang_masuk') {
+                jenisFilters.forEach((element) => {
+                    element.style.display = isTahunan ? 'none' : '';
+                });
+
+                if (isTahunan && jenisSelect) {
                     jenisSelect.value = 'pembelian';
                     if (window.jQuery) {
                         window.jQuery(jenisSelect).trigger('change');

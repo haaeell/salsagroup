@@ -19,6 +19,8 @@
                             <th>No</th>
                             <th>Nama Barang</th>
                             <th>Jumlah</th>
+                            <th>Sisa FIFO</th>
+                            <th>Harga Beli</th>
                             <th>Tanggal Masuk</th>
                             <th>Aksi</th>
                         </tr>
@@ -29,6 +31,8 @@
                                 <td>{{ $key + 1 }}</td>
                                 <td>{{ $item->barang->nama }}</td>
                                 <td>{{ $item->jumlah }}</td>
+                                <td>{{ $item->remaining_jumlah }}</td>
+                                <td>Rp {{ number_format($item->harga_beli, 0, ',', '.') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item->tanggal_masuk)->format('d/m/Y') }}</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm" data-bs-toggle="modal"

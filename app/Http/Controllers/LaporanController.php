@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barang;
 use App\Models\BarangMasuk;
 use App\Models\Pesanan;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -15,6 +16,7 @@ class LaporanController extends Controller
     {
         $mode = $request->mode ?? 'periode';
         $jenis = $request->jenis ?? 'pembelian';
+        $jenis = $mode === 'tahunan' ? 'pembelian' : $jenis;
         $dari = $request->dari ?? now()->startOfMonth()->format('Y-m-d');
         $sampai = $request->sampai ?? now()->endOfMonth()->format('Y-m-d');
         $tahun = (int) ($request->tahun ?? now()->year);
@@ -56,6 +58,7 @@ class LaporanController extends Controller
     {
         $mode = $request->mode ?? 'periode';
         $jenis = $request->jenis ?? 'pembelian';
+        $jenis = $mode === 'tahunan' ? 'pembelian' : $jenis;
 
         if ($mode === 'tahunan') {
             $tahun = (int) ($request->tahun ?? now()->year);
@@ -148,8 +151,10 @@ class LaporanController extends Controller
                 ->take(5)
                 ->values();
 
+            $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+
             $kategoriBreakdown = $data->flatMap->detailPesanan
-                ->groupBy(fn($detail) => optional(optional($detail->barang)->kategori)->nama ?? 'Tanpa Kategori')
+                ->groupBy(fn($detail) => $this->categoryNameForDetail($detail, $barangByKode))
                 ->map(fn($rows, $kategori) => [
                     'kategori' => $kategori,
                     'total' => $rows->sum(fn($detail) => $detail->jumlah * $detail->harga),
@@ -236,7 +241,7 @@ class LaporanController extends Controller
         $summary['rata_rata_transaksi'] = $summary['total_pesanan'] > 0
             ? $summary['total_pendapatan'] / $summary['total_pesanan']
             : 0;
-        $summary['total_modal'] = $orders->flatMap->detailPesanan->sum(fn($detail) => $detail->jumlah * $detail->harga_modal);
+        $summary['total_modal'] = $orders->flatMap->detailPesanan->sum(fn($detail) => $this->modalForDetail($detail));
         $summary['total_laba'] = $summary['total_pendapatan'] - $summary['total_modal'];
 
         return $summary;
@@ -244,13 +249,15 @@ class LaporanController extends Controller
 
     private function compileAnnualCategoryReport(Collection $orders, int $tahun, array $bulanDipilih): array
     {
-        $details = $orders->flatMap(function ($order) {
-            return $order->detailPesanan->map(function ($detail) use ($order) {
+        $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+
+        $details = $orders->flatMap(function ($order) use ($barangByKode) {
+            return $order->detailPesanan->map(function ($detail) use ($order, $barangByKode) {
                 return [
                     'bulan' => Carbon::parse($order->tanggal)->month,
-                    'kategori' => optional(optional($detail->barang)->kategori)->nama ?? 'Tanpa Kategori',
+                    'kategori' => $this->categoryNameForDetail($detail, $barangByKode),
                     'pendapatan' => $detail->jumlah * $detail->harga,
-                    'modal' => $detail->jumlah * $detail->harga_modal,
+                    'modal' => $this->modalForDetail($detail),
                 ];
             });
         });
@@ -350,5 +357,29 @@ class LaporanController extends Controller
             'total_modal' => 0,
             'total_laba' => 0,
         ];
+    }
+
+    private function modalForDetail($detail): int
+    {
+        if (!empty($detail->fifo_layers)) {
+            return collect($detail->fifo_layers)->sum(function ($layer) {
+                return ((int) ($layer['jumlah'] ?? 0)) * ((int) ($layer['harga_beli'] ?? 0));
+            });
+        }
+
+        return $detail->jumlah * $detail->harga_modal;
+    }
+
+    private function categoryNameForDetail($detail, Collection $barangByKode): string
+    {
+        $kategori = optional(optional($detail->barang)->kategori)->nama;
+
+        if ($kategori) {
+            return $kategori;
+        }
+
+        $barang = $barangByKode->get($detail->kode_barang);
+
+        return optional(optional($barang)->kategori)->nama ?? 'Tanpa Kategori';
     }
 }

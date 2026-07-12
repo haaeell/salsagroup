@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Pesanan;
 use App\Models\DetailPesanan;
 use App\Models\Barang;
+use App\Models\BarangMasuk;
 use App\Models\Kategori;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PesananController extends Controller
 {
@@ -51,6 +53,7 @@ class PesananController extends Controller
             foreach ($request->items as $item) {
                 $barang = Barang::findOrFail($item['barang_id']);
                 $subtotal = $barang->harga * $item['jumlah'];
+                $fifo = $this->consumeFifoStock($barang, (int) $item['jumlah']);
 
                 DetailPesanan::create([
                     'pesanan_id' => $pesanan->id,
@@ -59,11 +62,9 @@ class PesananController extends Controller
                     'nama_barang' => $barang->nama,
                     'jumlah' => $item['jumlah'],
                     'harga' => $barang->harga,
-                    'harga_modal' => $barang->harga_modal,
+                    'harga_modal' => $fifo['harga_modal'],
+                    'fifo_layers' => $fifo['layers'],
                 ]);
-
-                $barang->stok -= $item['jumlah'];
-                $barang->save();
 
                 $totalHarga += $subtotal;
             }
@@ -110,6 +111,7 @@ class PesananController extends Controller
             foreach ($request->barang_id as $index => $barangId) {
                 $jumlah = $request->jumlah[$index];
                 $barang = Barang::findOrFail($barangId);
+                $fifo = $this->consumeFifoStock($barang, (int) $jumlah);
 
                 DetailPesanan::create([
                     'pesanan_id' => $pesanan->id,
@@ -118,11 +120,9 @@ class PesananController extends Controller
                     'nama_barang' => $barang->nama,
                     'jumlah' => $jumlah,
                     'harga' => $barang->harga,
-                    'harga_modal' => $barang->harga_modal,
+                    'harga_modal' => $fifo['harga_modal'],
+                    'fifo_layers' => $fifo['layers'],
                 ]);
-
-                $barang->stok -= $jumlah;
-                $barang->save();
 
                 $totalHarga += $barang->harga * $jumlah;
             }
@@ -180,6 +180,16 @@ class PesananController extends Controller
             }
 
             $data['bukti_pembayaran'] = null;
+
+            if ($pesanan->status !== 'batal') {
+                DB::transaction(function () use ($pesanan) {
+                    $pesanan->load('detailPesanan');
+
+                    foreach ($pesanan->detailPesanan as $detail) {
+                        $this->restoreFifoStock($detail);
+                    }
+                });
+            }
         }
 
         $pesanan->update($data);
@@ -192,11 +202,14 @@ class PesananController extends Controller
     {
         $pesanan = Pesanan::with('detailPesanan')->findOrFail($id);
 
-        foreach ($pesanan->detailPesanan as $detail) {
-            $barang = Barang::findOrFail($detail->barang_id);
-            $barang->stok += $detail->jumlah;
-            $barang->save();
+        if ($pesanan->status !== 'batal') {
+            DB::transaction(function () use ($pesanan) {
+                foreach ($pesanan->detailPesanan as $detail) {
+                    $this->restoreFifoStock($detail);
+                }
+            });
         }
+
         $pesanan->delete();
 
         return redirect()->back()->with('success', 'Pesanan berhasil dihapus');
@@ -221,5 +234,83 @@ class PesananController extends Controller
         $pesanan = Pesanan::with('detailPesanan.barang')->findOrFail($id);
 
         return view('pesanan.struk', compact('pesanan'));
+    }
+
+    private function consumeFifoStock(Barang $barang, int $jumlah): array
+    {
+        if ($barang->stok < $jumlah) {
+            throw ValidationException::withMessages([
+                'stok' => 'Stok ' . $barang->nama . ' tidak mencukupi.',
+            ]);
+        }
+
+        $sisa = $jumlah;
+        $totalModal = 0;
+        $layers = [];
+
+        $batches = BarangMasuk::where('barang_id', $barang->id)
+            ->where('remaining_jumlah', '>', 0)
+            ->orderBy('tanggal_masuk')
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($batches as $batch) {
+            if ($sisa <= 0) {
+                break;
+            }
+
+            $ambil = min($sisa, $batch->remaining_jumlah);
+            $batch->remaining_jumlah -= $ambil;
+            $batch->save();
+
+            $layers[] = [
+                'barang_masuk_id' => $batch->id,
+                'jumlah' => $ambil,
+                'harga_beli' => $batch->harga_beli,
+            ];
+
+            $totalModal += $ambil * $batch->harga_beli;
+            $sisa -= $ambil;
+        }
+
+        if ($sisa > 0) {
+            throw ValidationException::withMessages([
+                'stok' => 'Sisa batch FIFO untuk ' . $barang->nama . ' tidak mencukupi. Tambahkan data Barang Masuk terlebih dahulu.',
+            ]);
+        }
+
+        $barang->stok -= $jumlah;
+        $barang->save();
+
+        return [
+            'harga_modal' => (int) round($totalModal / $jumlah),
+            'layers' => $layers,
+        ];
+    }
+
+    private function restoreFifoStock(DetailPesanan $detail): void
+    {
+        if ($detail->barang_id) {
+            $barang = Barang::lockForUpdate()->find($detail->barang_id);
+
+            if ($barang) {
+                $barang->stok += $detail->jumlah;
+                $barang->save();
+            }
+        }
+
+        foreach ($detail->fifo_layers ?? [] as $layer) {
+            if (empty($layer['barang_masuk_id'])) {
+                continue;
+            }
+
+            $batch = BarangMasuk::lockForUpdate()->find($layer['barang_masuk_id']);
+
+            if ($batch) {
+                $batch->remaining_jumlah += $layer['jumlah'];
+                $batch->save();
+            }
+        }
     }
 }

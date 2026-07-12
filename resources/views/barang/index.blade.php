@@ -20,7 +20,6 @@
                             <th>Gambar</th>
                             <th>Nama</th>
                             <th>Kategori</th>
-                            <th>Harga Modal</th>
                             <th>Harga Jual</th>
                             <th>Stok</th>
                             <th>Batas Stok Menipis</th>
@@ -40,7 +39,6 @@
                                 </td>
                                 <td>{{ $item->nama }}</td>
                                 <td>{{ $item->kategori->nama }}</td>
-                                <td>Rp {{ number_format($item->harga_modal, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
                                 <td>{{ $item->stok }} - {{ $item->satuan ?? 'pcs' }}</td>
                                 <td>{{ $item->batas_stok_minimum }}</td>
@@ -109,16 +107,6 @@
                                                                         @endforeach
                                                                     </select>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="mb-3">
-                                                            <label class="form-label">Harga Modal <span
-                                                                    class="text-danger">*</span></label>
-                                                            <div class="input-group">
-                                                                <span class="input-group-text">Rp</span>
-                                                                <input type="number" name="harga_modal"
-                                                                    class="form-control"
-                                                                    value="{{ $item->harga_modal }}" required>
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
@@ -271,24 +259,10 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Harga Modal <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" name="harga_modal" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
                                 <label class="form-label">Harga Jual <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
                                     <input type="number" name="harga" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Stok <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-cart"></i></span>
-                                    <input type="number" name="stok" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
