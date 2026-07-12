@@ -12,7 +12,9 @@ class Barang extends Model
         'nama',
         'kategori_id',
         'harga',
+        'harga_modal',
         'stok',
+        'batas_stok_minimum',
         'satuan'
     ];
     protected $table = 'barang';

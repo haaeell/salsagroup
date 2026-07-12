@@ -17,6 +17,7 @@ class Pesanan extends Model
         'status',
         'tanggal',
         'catatan',
+        'metode_pembayaran',
         'bukti_pembayaran',
     ];
 

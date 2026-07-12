@@ -20,8 +20,10 @@
                             <th>Gambar</th>
                             <th>Nama</th>
                             <th>Kategori</th>
-                            <th>Harga</th>
+                            <th>Harga Modal</th>
+                            <th>Harga Jual</th>
                             <th>Stok</th>
+                            <th>Batas Stok Menipis</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -38,8 +40,10 @@
                                 </td>
                                 <td>{{ $item->nama }}</td>
                                 <td>{{ $item->kategori->nama }}</td>
+                                <td>Rp {{ number_format($item->harga_modal, 0, ',', '.') }}</td>
                                 <td>Rp {{ number_format($item->harga, 0, ',', '.') }}</td>
                                 <td>{{ $item->stok }} - {{ $item->satuan ?? 'pcs' }}</td>
+                                <td>{{ $item->batas_stok_minimum }}</td>
                                 <td>
                                     <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                         data-bs-target="#modalEdit{{ $item->id }}"><i class="bi bi-pencil"></i>
@@ -108,7 +112,17 @@
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
-                                                            <label class="form-label">Harga <span
+                                                            <label class="form-label">Harga Modal <span
+                                                                    class="text-danger">*</span></label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text">Rp</span>
+                                                                <input type="number" name="harga_modal"
+                                                                    class="form-control"
+                                                                    value="{{ $item->harga_modal }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Harga Jual <span
                                                                     class="text-danger">*</span></label>
                                                             <div class="input-group">
                                                                 <span class="input-group-text">Rp</span>
@@ -138,6 +152,18 @@
                                                                         class="bi bi-cart"></i></span>
                                                                 <input type="number" name="stok" class="form-control"
                                                                     value="{{ $item->stok }}" disabled>
+                                                            </div>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Batas Stok Menipis <span
+                                                                    class="text-danger">*</span></label>
+                                                            <div class="input-group">
+                                                                <span class="input-group-text"><i
+                                                                        class="bi bi-exclamation-triangle"></i></span>
+                                                                <input type="number" name="batas_stok_minimum"
+                                                                    class="form-control"
+                                                                    value="{{ $item->batas_stok_minimum ?? 5 }}"
+                                                                    min="0" required>
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
@@ -245,7 +271,14 @@
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Harga <span class="text-danger">*</span></label>
+                                <label class="form-label">Harga Modal <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" name="harga_modal" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Harga Jual <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
                                     <input type="number" name="harga" class="form-control" required>
@@ -256,6 +289,14 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-cart"></i></span>
                                     <input type="number" name="stok" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Batas Stok Menipis <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-exclamation-triangle"></i></span>
+                                    <input type="number" name="batas_stok_minimum" class="form-control" min="0"
+                                        value="5" required>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">

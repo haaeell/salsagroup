@@ -22,7 +22,11 @@ class BarangController extends Controller
             'nama' => 'required|string|max:255',
             'kode' => 'required|string|max:255',
             'kategori_id' => 'required|exists:kategori,id',
-            'harga' => 'required|numeric',
+            'harga_modal' => 'required|numeric|min:0',
+            'harga' => 'required|numeric|min:0',
+            'stok' => 'nullable|integer|min:0',
+            'batas_stok_minimum' => 'required|integer|min:0',
+            'satuan' => 'required|string|max:255',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -32,8 +36,10 @@ class BarangController extends Controller
             'nama' => $request->nama,
             'kode' => $request->kode,
             'kategori_id' => $request->kategori_id,
+            'harga_modal' => $request->harga_modal,
             'harga' => $request->harga,
             'stok' => $request->stok,
+            'batas_stok_minimum' => $request->batas_stok_minimum,
             'gambar' => $gambar,
             'satuan' => $request->satuan
         ]);
@@ -49,7 +55,10 @@ class BarangController extends Controller
             'nama' => 'required|string|max:255',
             'kode' => 'required|string|max:255',
             'kategori_id' => 'required|exists:kategori,id',
-            'harga' => 'required|numeric',
+            'harga_modal' => 'required|numeric|min:0',
+            'harga' => 'required|numeric|min:0',
+            'batas_stok_minimum' => 'required|integer|min:0',
+            'satuan' => 'required|string|max:255',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -64,7 +73,9 @@ class BarangController extends Controller
             'nama' => $request->nama,
             'kode' => $request->kode,
             'kategori_id' => $request->kategori_id,
+            'harga_modal' => $request->harga_modal,
             'harga' => $request->harga,
+            'batas_stok_minimum' => $request->batas_stok_minimum,
             'gambar' => $barang->gambar,
             'satuan' => $request->satuan
         ]);

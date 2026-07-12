@@ -13,7 +13,8 @@ class DetailPesanan extends Model
         'kode_barang',
         'nama_barang',
         'jumlah',
-        'harga'
+        'harga',
+        'harga_modal'
     ];
 
     public function pesanan()

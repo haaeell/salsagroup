@@ -75,12 +75,41 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Username <span
+                                                            class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-person-circle"></i></span>
+                                                        <input type="text" name="username" class="form-control"
+                                                            value="{{ $u->username }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
                                                     <label class="form-label">Email <span
                                                             class="text-danger">*</span></label>
                                                     <div class="input-group">
                                                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                                                         <input type="email" name="email" class="form-control"
                                                             value="{{ $u->email }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">No Telepon <span
+                                                            class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i
+                                                                class="bi bi-telephone"></i></span>
+                                                        <input type="text" name="no_telepon" class="form-control"
+                                                            value="{{ $u->no_telepon }}" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Alamat <span
+                                                            class="text-danger">*</span></label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                                        <input type="text" name="alamat" class="form-control"
+                                                            value="{{ $u->alamat }}" required>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6 mb-3">
@@ -130,10 +159,17 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Nama Belakang</label>
+                            <label class="form-label">Nama Belakang <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
-                                <input type="text" name="nama_belakang" class="form-control">
+                                <input type="text" name="nama_belakang" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Username <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                                <input type="text" name="username" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -144,6 +180,20 @@
                             </div>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">No Telepon <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="text" name="no_telepon" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Alamat <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" name="alamat" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Password <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
@@ -151,8 +201,8 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Role</label>
-                            <select name="role" class="form-select">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select name="role" class="form-select" required>
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
                             </select>

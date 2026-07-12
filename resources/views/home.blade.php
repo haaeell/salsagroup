@@ -67,6 +67,7 @@
                                 <th>Nama Barang</th>
                                 <th>Kode</th>
                                 <th>Stok</th>
+                                <th>Batas Minimum</th>
                                 <th>Satuan</th>
                             </tr>
                         </thead>
@@ -77,11 +78,12 @@
                                     <td>{{ $barang->nama }}</td>
                                     <td>{{ $barang->kode }}</td>
                                     <td class="text-danger fw-bold">{{ $barang->stok }}</td>
+                                    <td>{{ $barang->batas_stok_minimum }}</td>
                                     <td>{{ $barang->satuan }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Tidak ada barang dengan stok menipis.</td>
+                                    <td colspan="6" class="text-center">Tidak ada barang dengan stok menipis.</td>
                                 </tr>
                             @endforelse
                         </tbody>

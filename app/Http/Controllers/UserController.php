@@ -19,14 +19,21 @@ class UserController extends Controller
     {
         $request->validate([
             'nama_depan' => 'required',
+            'nama_belakang' => 'required',
+            'username' => 'required|unique:users,username',
             'email' => 'required|email|unique:users,email',
+            'no_telepon' => 'required',
+            'alamat' => 'required',
             'password' => 'required|min:6',
         ]);
 
         User::create([
             'nama_depan' => $request->nama_depan,
             'nama_belakang' => $request->nama_belakang,
+            'username' => $request->username,
             'email' => $request->email,
+            'no_telepon' => $request->no_telepon,
+            'alamat' => $request->alamat,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'nik' => $request->nik
@@ -39,13 +46,20 @@ class UserController extends Controller
     {
         $request->validate([
             'nama_depan' => 'required',
+            'nama_belakang' => 'required',
+            'username' => 'required|unique:users,username,' . $user->id,
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'no_telepon' => 'required',
+            'alamat' => 'required',
         ]);
 
         $user->update([
             'nama_depan' => $request->nama_depan,
             'nama_belakang' => $request->nama_belakang,
+            'username' => $request->username,
             'email' => $request->email,
+            'no_telepon' => $request->no_telepon,
+            'alamat' => $request->alamat,
             'role' => $request->role,
             'nik' => $request->nik
         ]);

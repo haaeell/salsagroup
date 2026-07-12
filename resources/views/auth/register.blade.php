@@ -18,7 +18,6 @@
                                         ['email', 'Email', 'envelope'],
                                         ['no_telepon', 'No Telepon', 'telephone'],
                                         ['alamat', 'Alamat', 'geo-alt'],
-                                        ['nik', 'NIK', 'card-list'],
                                     ];
                                 @endphp
 

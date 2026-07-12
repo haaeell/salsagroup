@@ -362,6 +362,8 @@
                             },
                             success: function(res) {
                                 const pesananId = res.pesanan_id;
+                                const keranjangUntukStruk = cart;
+
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Pesanan Berhasil Dibuat!',
@@ -369,8 +371,9 @@
                                     timer: 1800,
                                     showConfirmButton: false
                                 }).then(() => {
-                                    showStruk(res, cart);
+                                    showStruk(res, keranjangUntukStruk);
                                 });
+
                                 cart = {};
                                 updateCartTable();
                             },
@@ -401,7 +404,7 @@
             function showStruk(data, keranjang) {
                 let html = `
         <div class="mb-2">
-            <strong>Kasir:</strong> {{ Auth::user()->username }} <br>
+            <strong>Nama:</strong> {{ Auth::user()->nama_depan }} {{ Auth::user()->nama_belakang }} <br>
             <strong>Tanggal:</strong> {{ \Carbon\Carbon::now()->format('d-m-Y H:i') }}
         </div>
         <hr>

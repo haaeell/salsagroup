@@ -40,10 +40,17 @@
                         <span>Pesanan</span>
                     </a>
                 </li>
-                <li class="{{ request()->is('laporan') ? 'active' : '' }}">
+                <li class="{{ request()->is('laporan') && request('mode') !== 'tahunan' ? 'active' : '' }}">
                     <a href="{{ route('laporan.index') }}" class="nav-link">
                         <i class="bi bi-book"></i>
                         <span>Laporan</span>
+                    </a>
+                </li>
+                <li class="{{ request()->is('laporan') && request('mode') === 'tahunan' ? 'active' : '' }}">
+                    <a href="{{ route('laporan.index', ['mode' => 'tahunan', 'jenis' => 'pembelian']) }}"
+                        class="nav-link">
+                        <i class="bi bi-bar-chart-line"></i>
+                        <span>Laporan Tahunan</span>
                     </a>
                 </li>
                 <li class="{{ request()->is('users') ? 'active' : '' }}">

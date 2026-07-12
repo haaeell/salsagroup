@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pesanan;
+use App\Models\User;
+use App\Models\Barang;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +21,9 @@ class RiwayatPesananController extends Controller
 
         $pesanan = $pesanan->get();
 
-        return view('riwayat-pesanan.index', compact('pesanan'));
+        $users = User::where('role', 'user')->get();
+        $barang = Barang::all();
+
+        return view('riwayat-pesanan.index', compact('pesanan', 'users', 'barang'));
     }
 }

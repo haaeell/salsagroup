@@ -28,7 +28,9 @@ class HomeController extends Controller
             'totalPermintaan'   => Pesanan::where('status', 'proses')->count(),
             'totalUser'         => User::count(),
             'totalBarangMasuk'  => BarangMasuk::count(),
-            'stokMenipis'       => Barang::where('stok', '<=', 5)->orderBy('stok')->get(),
+            'stokMenipis'       => Barang::whereColumn('stok', '<=', 'batas_stok_minimum')
+                ->orderBy('stok')
+                ->get(),
             'totalPesananSelesai' => $totalPesananSelesai ?? null,
             'totalPesananProses' => $totalPesananProses ?? null
         ]);

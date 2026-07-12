@@ -27,6 +27,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/pesanan/struk/{id}', [PesananController::class, 'struk'])->name('pesanan.struk');
 
     Route::resource('pesanan', PesananController::class);
+    Route::post('/pesanan-admin', [PesananController::class, 'storeAdmin'])->name('pesanan.storeAdmin');
     Route::resource('users', UserController::class);
 
     Route::get('/cari-produk', [PesananController::class, 'cari'])->name('produk.cari');

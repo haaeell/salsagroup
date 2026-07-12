@@ -6,9 +6,11 @@ use App\Models\Pesanan;
 use App\Models\DetailPesanan;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PesananController extends Controller
 {
@@ -57,6 +59,7 @@ class PesananController extends Controller
                     'nama_barang' => $barang->nama,
                     'jumlah' => $item['jumlah'],
                     'harga' => $barang->harga,
+                    'harga_modal' => $barang->harga_modal,
                 ]);
 
                 $barang->stok -= $item['jumlah'];
@@ -76,22 +79,107 @@ class PesananController extends Controller
         ]);
     }
 
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'catatan' => 'nullable|string',
+            'barang_id' => 'required|array|min:1',
+            'barang_id.*' => 'required|exists:barang,id',
+            'jumlah' => 'required|array|min:1',
+            'jumlah.*' => 'required|integer|min:1',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $orderId = 'ORD-' . time();
+            $totalHarga = 0;
+
+            $customer = User::findOrFail($request->user_id);
+            $pesanan = Pesanan::create([
+                'user_id' => $customer->id,
+                'order_id' => $orderId,
+                'nama' => trim($customer->nama_depan . ' ' . $customer->nama_belakang),
+                'no_telepon' => $customer->no_telepon,
+                'alamat' => $customer->alamat,
+                'total_harga' => 0,
+                'status' => 'proses',
+                'tanggal' => now(),
+                'catatan' => $request->catatan ?? '-',
+            ]);
+
+            foreach ($request->barang_id as $index => $barangId) {
+                $jumlah = $request->jumlah[$index];
+                $barang = Barang::findOrFail($barangId);
+
+                DetailPesanan::create([
+                    'pesanan_id' => $pesanan->id,
+                    'barang_id' => $barang->id,
+                    'kode_barang' => $barang->kode,
+                    'nama_barang' => $barang->nama,
+                    'jumlah' => $jumlah,
+                    'harga' => $barang->harga,
+                    'harga_modal' => $barang->harga_modal,
+                ]);
+
+                $barang->stok -= $jumlah;
+                $barang->save();
+
+                $totalHarga += $barang->harga * $jumlah;
+            }
+
+            $pesanan->update(['total_harga' => $totalHarga]);
+        });
+
+        return redirect()->route('riwayat-pesanan.index')->with('success', 'Pesanan berhasil ditambahkan');
+    }
+
     public function update(Request $request, $id)
     {
         $pesanan = Pesanan::findOrFail($id);
 
         $request->validate([
             'status' => 'required|in:batal,selesai',
-            'bukti_pembayaran' => 'nullable|image|max:2048', // ⬅️ Validasi upload
+            'metode_pembayaran' => 'nullable|in:cash,transfer',
+            'bukti_pembayaran' => 'nullable|image|max:2048',
         ]);
 
         $data = [
             'status' => $request->status,
         ];
 
-        if ($request->hasFile('bukti_pembayaran')) {
-            $path = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
-            $data['bukti_pembayaran'] = $path;
+        if ($request->status === 'selesai') {
+            $request->validate([
+                'metode_pembayaran' => 'required|in:cash,transfer',
+                'bukti_pembayaran' => $request->metode_pembayaran === 'transfer'
+                    ? ($pesanan->bukti_pembayaran ? 'nullable|image|max:2048' : 'required|image|max:2048')
+                    : 'nullable|image|max:2048',
+            ]);
+
+            $data['metode_pembayaran'] = $request->metode_pembayaran;
+
+            if ($request->metode_pembayaran === 'transfer' && $request->hasFile('bukti_pembayaran')) {
+                if ($pesanan->bukti_pembayaran) {
+                    Storage::disk('public')->delete($pesanan->bukti_pembayaran);
+                }
+
+                $data['bukti_pembayaran'] = $request->file('bukti_pembayaran')->store('bukti_pembayaran', 'public');
+            }
+
+            if ($request->metode_pembayaran === 'cash') {
+                if ($pesanan->bukti_pembayaran) {
+                    Storage::disk('public')->delete($pesanan->bukti_pembayaran);
+                }
+
+                $data['bukti_pembayaran'] = null;
+            }
+        } else {
+            $data['metode_pembayaran'] = null;
+
+            if ($pesanan->bukti_pembayaran) {
+                Storage::disk('public')->delete($pesanan->bukti_pembayaran);
+            }
+
+            $data['bukti_pembayaran'] = null;
         }
 
         $pesanan->update($data);
