@@ -511,13 +511,23 @@
                 </div>
 
                 <div class="row g-3 mb-4">
-                    <div class="col-md-12">
-                        <div class="chart-card">
-                            <div class="chart-title">5 Produk Terlaris</div>
-                            <div class="chart-subtitle">Berdasarkan jumlah unit terjual</div>
-                            <canvas id="chartTopProduk" height="80"></canvas>
+                    @forelse ($topProduk as $group)
+                        <div class="col-md-6">
+                            <div class="chart-card">
+                                <div class="chart-title">5 Produk Terlaris - {{ $group['kategori'] }}</div>
+                                <div class="chart-subtitle">Berdasarkan jumlah unit terjual</div>
+                                <canvas class="chartTopProdukKategori" data-produk="{{ json_encode($group['produk']) }}"
+                                    height="80"></canvas>
+                            </div>
                         </div>
-                    </div>
+                    @empty
+                        <div class="col-md-12">
+                            <div class="chart-card">
+                                <div class="chart-title">5 Produk Terlaris</div>
+                                <p class="text-muted mb-0">Tidak ada data produk terjual.</p>
+                            </div>
+                        </div>
+                    @endforelse
                 </div>
             @else
                 <div class="row stats-grid">
@@ -991,52 +1001,56 @@
                             }
                         });
 
-                        const topProduk = @json($topProduk);
-                        new Chart(document.getElementById('chartTopProduk'), {
-                            type: 'bar',
-                            data: {
-                                labels: topProduk.map(p => p.nama),
-                                datasets: [{
-                                    label: 'Unit Terjual',
-                                    data: topProduk.map(p => p.jumlah),
-                                    backgroundColor: colors.series1,
-                                    borderRadius: 4,
-                                    maxBarThickness: 40,
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(ctx) {
-                                                return ctx.parsed.y.toLocaleString('id-ID') + ' unit';
+                        document.querySelectorAll('.chartTopProdukKategori').forEach(function(canvas, index) {
+                            const produk = JSON.parse(canvas.dataset.produk || '[]');
+                            const barColor = palette[index % palette.length];
+
+                            new Chart(canvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: produk.map(p => p.nama),
+                                    datasets: [{
+                                        label: 'Unit Terjual',
+                                        data: produk.map(p => p.jumlah),
+                                        backgroundColor: barColor,
+                                        borderRadius: 4,
+                                        maxBarThickness: 40,
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(ctx) {
+                                                    return ctx.parsed.y.toLocaleString('id-ID') + ' unit';
+                                                }
                                             }
                                         }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        grid: {
-                                            display: false
-                                        }
                                     },
-                                    y: {
-                                        beginAtZero: true,
-                                        grid: {
-                                            color: colors.grid
+                                    scales: {
+                                        x: {
+                                            grid: {
+                                                display: false
+                                            }
                                         },
-                                        ticks: {
-                                            callback: function(val) {
-                                                return val.toLocaleString('id-ID');
+                                        y: {
+                                            beginAtZero: true,
+                                            grid: {
+                                                color: colors.grid
+                                            },
+                                            ticks: {
+                                                callback: function(val) {
+                                                    return val.toLocaleString('id-ID');
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
+                            });
                         });
                     @endif
                 @endif

@@ -144,18 +144,9 @@ class LaporanController extends Controller
                 ->sortKeys()
                 ->values();
 
-            $topProduk = $data->flatMap->detailPesanan
-                ->groupBy('nama_barang')
-                ->map(fn($rows, $nama) => [
-                    'nama' => $nama,
-                    'jumlah' => $rows->sum('jumlah'),
-                    'total' => $rows->sum(fn($detail) => $detail->jumlah * $detail->harga),
-                ])
-                ->sortByDesc('jumlah')
-                ->take(5)
-                ->values();
-
             $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+
+            $topProduk = $this->buildTopProdukByKategori($data, $barangByKode);
 
             $kategoriBreakdown = $data->flatMap->detailPesanan
                 ->groupBy(fn($detail) => $this->categoryNameForDetail($detail, $barangByKode))
@@ -203,16 +194,9 @@ class LaporanController extends Controller
 
             $summary = $this->buildSummaryFromOrders($data);
             $annualReport = $this->compileAnnualCategoryReport($data, $tahun, $bulanDipilih);
-            $topProduk = $data->flatMap->detailPesanan
-                ->groupBy('nama_barang')
-                ->map(fn($rows, $nama) => [
-                    'nama' => $nama,
-                    'jumlah' => $rows->sum('jumlah'),
-                    'total' => $rows->sum(fn($detail) => $detail->jumlah * $detail->harga),
-                ])
-                ->sortByDesc('jumlah')
-                ->take(5)
-                ->values();
+
+            $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+            $topProduk = $this->buildTopProdukByKategori($data, $barangByKode);
 
             $kategoriBreakdown = collect($annualReport['chart']['datasets'] ?? [])
                 ->map(fn($dataset) => [
@@ -382,6 +366,28 @@ class LaporanController extends Controller
         }
 
         return $detail->jumlah * $detail->harga_modal;
+    }
+
+    private function buildTopProdukByKategori(Collection $orders, Collection $barangByKode): Collection
+    {
+        return $orders->flatMap->detailPesanan
+            ->groupBy(fn($detail) => $this->categoryNameForDetail($detail, $barangByKode))
+            ->map(function ($details, $kategori) {
+                return [
+                    'kategori' => $kategori,
+                    'produk' => $details->groupBy('nama_barang')
+                        ->map(fn($rows, $nama) => [
+                            'nama' => $nama,
+                            'jumlah' => $rows->sum('jumlah'),
+                            'total' => $rows->sum(fn($detail) => $detail->jumlah * $detail->harga),
+                        ])
+                        ->sortByDesc('jumlah')
+                        ->take(5)
+                        ->values(),
+                ];
+            })
+            ->sortBy('kategori')
+            ->values();
     }
 
     private function buildDailyTrendByKategori(Collection $orders): array
