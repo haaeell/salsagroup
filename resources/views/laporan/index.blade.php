@@ -474,26 +474,28 @@
                 <div class="row g-3 mb-4">
                     <div class="col-md-7">
                         <div class="chart-card">
-                            <div class="chart-title">Tren Pendapatan Harian</div>
+                            <div class="chart-title">Tren Pendapatan Harian per Kategori</div>
                             <div class="chart-subtitle">Periode {{ date('d/m/Y', strtotime($dari)) }} -
                                 {{ date('d/m/Y', strtotime($sampai)) }}</div>
                             <canvas id="chartTrend" height="110"></canvas>
                             <table class="visually-hidden" aria-hidden="false">
-                                <caption>Tren Pendapatan Harian</caption>
+                                <caption>Tren Pendapatan Harian per Kategori</caption>
                                 <thead>
                                     <tr>
                                         <th>Tanggal</th>
+                                        <th>Kategori</th>
                                         <th>Pendapatan</th>
-                                        <th>Jumlah Pesanan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($trend as $row)
-                                        <tr>
-                                            <td>{{ $row['tanggal'] }}</td>
-                                            <td>{{ $row['total'] }}</td>
-                                            <td>{{ $row['jumlah_pesanan'] }}</td>
-                                        </tr>
+                                    @foreach ($trendByKategori['labels'] as $i => $tanggal)
+                                        @foreach ($trendByKategori['series'] as $seri)
+                                            <tr>
+                                                <td>{{ $tanggal }}</td>
+                                                <td>{{ $seri['kategori'] }}</td>
+                                                <td>{{ $seri['data'][$i] }}</td>
+                                            </tr>
+                                        @endforeach
                                     @endforeach
                                 </tbody>
                             </table>
@@ -818,73 +820,142 @@
                         }
                     });
                 @else
-                    const trend = @json($trend);
-                    const trendLabels = trend.map(r => {
-                        const parsed = new Date(r.tanggal);
-                        if (Number.isNaN(parsed.getTime())) {
-                            return r.tanggal;
-                        }
+                    @if ($jenis === 'pembelian')
+                        const trend = @json($trend);
+                        const trendLabels = trend.map(r => {
+                            const parsed = new Date(r.tanggal);
+                            if (Number.isNaN(parsed.getTime())) {
+                                return r.tanggal;
+                            }
 
-                        return parsed.toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: 'short'
+                            return parsed.toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short'
+                            });
                         });
-                    });
 
-                    new Chart(document.getElementById('chartTrend'), {
-                        type: 'line',
-                        data: {
-                            labels: trendLabels,
-                            datasets: [{
-                                label: '{{ $jenis === 'pembelian' ? 'Jumlah Masuk' : 'Pendapatan' }}',
-                                data: trend.map(r => r.total),
-                                borderColor: colors.series1,
-                                backgroundColor: colors.series1 + '1a',
-                                borderWidth: 2,
-                                pointRadius: 4,
-                                pointBackgroundColor: colors.series1,
-                                pointBorderColor: style.getPropertyValue('--surface-1').trim(),
-                                pointBorderWidth: 2,
-                                fill: true,
-                                tension: 0.3,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(ctx) {
-                                            const val = ctx.parsed.y;
-                                            return '{{ $jenis === 'pembelian' ? '' : 'Rp ' }}' + val
-                                                .toLocaleString('id-ID');
+                        new Chart(document.getElementById('chartTrend'), {
+                            type: 'line',
+                            data: {
+                                labels: trendLabels,
+                                datasets: [{
+                                    label: 'Jumlah Masuk',
+                                    data: trend.map(r => r.total),
+                                    borderColor: colors.series1,
+                                    backgroundColor: colors.series1 + '1a',
+                                    borderWidth: 2,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: colors.series1,
+                                    pointBorderColor: style.getPropertyValue('--surface-1').trim(),
+                                    pointBorderWidth: 2,
+                                    fill: true,
+                                    tension: 0.3,
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(ctx) {
+                                                return ctx.parsed.y.toLocaleString('id-ID');
+                                            }
                                         }
                                     }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: {
-                                        display: false
-                                    }
                                 },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: colors.grid
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
                                     },
-                                    ticks: {
-                                        callback: function(val) {
-                                            return val.toLocaleString('id-ID');
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: colors.grid
+                                        },
+                                        ticks: {
+                                            callback: function(val) {
+                                                return val.toLocaleString('id-ID');
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    @else
+                        const trendByKategori = @json($trendByKategori);
+                        const trendLabels = trendByKategori.labels.map(tanggal => {
+                            const parsed = new Date(tanggal);
+                            if (Number.isNaN(parsed.getTime())) {
+                                return tanggal;
+                            }
+
+                            return parsed.toLocaleDateString('id-ID', {
+                                day: '2-digit',
+                                month: 'short'
+                            });
+                        });
+
+                        new Chart(document.getElementById('chartTrend'), {
+                            type: 'line',
+                            data: {
+                                labels: trendLabels,
+                                datasets: trendByKategori.series.map((seri, index) => ({
+                                    label: seri.kategori,
+                                    data: seri.data,
+                                    borderColor: palette[index % palette.length],
+                                    backgroundColor: palette[index % palette.length] + '1a',
+                                    borderWidth: 2,
+                                    pointRadius: 3,
+                                    pointHoverRadius: 5,
+                                    fill: false,
+                                    tension: 0.3,
+                                }))
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            boxWidth: 10,
+                                            padding: 12
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(ctx) {
+                                                return ctx.dataset.label + ': Rp ' + ctx.parsed.y
+                                                    .toLocaleString('id-ID');
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: colors.grid
+                                        },
+                                        ticks: {
+                                            callback: function(val) {
+                                                return val.toLocaleString('id-ID');
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    @endif
 
                     @if ($jenis !== 'pembelian')
                         const kategoriData = @json($kategoriBreakdown);

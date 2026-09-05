@@ -12,8 +12,7 @@
                             <div class="row g-3">
                                 @php
                                     $fields = [
-                                        ['nama', 'Nama Lengkap', 'person'],
-                                        ['username', 'Username', 'person-circle'],
+                                        ['username', 'Nama', 'person'],
                                         ['email', 'Email', 'envelope'],
                                         ['no_telepon', 'No Telepon', 'telephone'],
                                         ['alamat', 'Alamat', 'geo-alt'],

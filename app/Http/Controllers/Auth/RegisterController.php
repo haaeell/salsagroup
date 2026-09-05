@@ -50,7 +50,6 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'nama' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'no_telepon' => ['required', 'string', 'max:20'],
@@ -67,11 +66,9 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        [$namaDepan, $namaBelakang] = array_pad(preg_split('/\s+/', trim($data['nama']), 2), 2, '');
-
         return User::create([
-            'nama_depan' => $namaDepan,
-            'nama_belakang' => $namaBelakang,
+            'nama_depan' => $data['username'],
+            'nama_belakang' => '',
             'username' => $data['username'],
             'email' => $data['email'],
             'no_telepon' => $data['no_telepon'],

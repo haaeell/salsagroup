@@ -106,6 +106,7 @@ class LaporanController extends Controller
         $topProduk = collect();
         $kategoriBreakdown = collect();
         $detailPemesanan = collect();
+        $trendByKategori = ['labels' => [], 'series' => []];
 
         $status = $jenis === 'pemesanan' ? 'selesai' : null;
 
@@ -166,6 +167,7 @@ class LaporanController extends Controller
                 ->values();
 
             $detailPemesanan = $this->buildDetailPemesananByKategori($data);
+            $trendByKategori = $this->buildDailyTrendByKategori($data);
         }
 
         return [
@@ -175,6 +177,7 @@ class LaporanController extends Controller
             'topProduk' => $topProduk,
             'kategoriBreakdown' => $kategoriBreakdown,
             'detailPemesanan' => $detailPemesanan,
+            'trendByKategori' => $trendByKategori,
             'annualReport' => null,
         ];
     }
@@ -237,6 +240,7 @@ class LaporanController extends Controller
             'topProduk' => $topProduk,
             'kategoriBreakdown' => $kategoriBreakdown,
             'detailPemesanan' => $detailPemesanan,
+            'trendByKategori' => ['labels' => [], 'series' => []],
             'annualReport' => $annualReport,
         ];
     }
@@ -378,6 +382,38 @@ class LaporanController extends Controller
         }
 
         return $detail->jumlah * $detail->harga_modal;
+    }
+
+    private function buildDailyTrendByKategori(Collection $orders): array
+    {
+        $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+
+        $details = $orders->flatMap(function ($order) use ($barangByKode) {
+            return $order->detailPesanan->map(function ($detail) use ($order, $barangByKode) {
+                return [
+                    'tanggal' => Carbon::parse($order->tanggal)->format('Y-m-d'),
+                    'kategori' => $this->categoryNameForDetail($detail, $barangByKode),
+                    'pendapatan' => $detail->jumlah * $detail->harga,
+                ];
+            });
+        });
+
+        $labels = $details->pluck('tanggal')->unique()->sort()->values();
+        $categories = $details->pluck('kategori')->unique()->sort()->values();
+
+        $series = $categories->map(function ($kategori) use ($details, $labels) {
+            $detailForKategori = $details->where('kategori', $kategori);
+
+            return [
+                'kategori' => $kategori,
+                'data' => $labels->map(fn($tanggal) => $detailForKategori->where('tanggal', $tanggal)->sum('pendapatan'))->values(),
+            ];
+        })->values();
+
+        return [
+            'labels' => $labels,
+            'series' => $series,
+        ];
     }
 
     private function buildDetailPemesananByKategori(Collection $orders): Collection
