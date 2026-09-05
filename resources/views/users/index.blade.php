@@ -23,6 +23,7 @@
                             <th>Nama</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -34,6 +35,33 @@
                                 <td>{{ $u->email }}</td>
                                 <td>{{ $u->role }}</td>
                                 <td>
+                                    @if ($u->status === 'approved')
+                                        <span class="badge bg-success">Disetujui</span>
+                                    @elseif ($u->status === 'pending')
+                                        <span class="badge bg-warning text-dark">Menunggu Persetujuan</span>
+                                    @else
+                                        <span class="badge bg-danger">Ditolak</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($u->status !== 'approved')
+                                        <form method="POST" action="{{ route('users.updateStatus', $u->id) }}"
+                                            class="d-inline">
+                                            @csrf @method('PUT')
+                                            <input type="hidden" name="status" value="approved">
+                                            <button class="btn btn-sm btn-success"><i class="bi bi-check-circle"></i>
+                                                Setujui</button>
+                                        </form>
+                                    @endif
+                                    @if ($u->status !== 'rejected')
+                                        <form method="POST" action="{{ route('users.updateStatus', $u->id) }}"
+                                            class="d-inline" onsubmit="return confirm('Tolak user ini?')">
+                                            @csrf @method('PUT')
+                                            <input type="hidden" name="status" value="rejected">
+                                            <button class="btn btn-sm btn-outline-danger"><i
+                                                    class="bi bi-x-circle"></i> Tolak</button>
+                                        </form>
+                                    @endif
                                     <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
                                         data-bs-target="#editModal{{ $u->id }}">
                                         <i class="bi bi-pencil"></i> Edit

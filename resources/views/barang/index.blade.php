@@ -82,13 +82,23 @@
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
+                                                            <label class="form-label">Deskripsi</label>
+                                                            <textarea name="deskripsi" class="form-control"
+                                                                rows="2">{{ $item->deskripsi }}</textarea>
+                                                        </div>
+                                                        <div class="mb-3">
                                                             <label class="form-label">Satuan <span
                                                                     class="text-danger">*</span></label>
                                                             <div class="input-group">
                                                                 <span class="input-group-text"><i
                                                                         class="bi bi-tag"></i></span>
-                                                                <input type="text" name="satuan" class="form-control"
-                                                                    value="{{ $item->satuan }}" required>
+                                                                <select name="satuan" class="form-select" required>
+                                                                    @foreach (['lembar' => 'Lembar', 'pcs' => 'Pcs', 'batang' => 'Batang', 'kotak' => 'Kotak', 'meter' => 'Meter', 'sak' => 'Sak'] as $value => $label)
+                                                                        <option value="{{ $value }}"
+                                                                            {{ $item->satuan == $value ? 'selected' : '' }}>
+                                                                            {{ $label }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                         </div>
                                                         <div class="mb-3">
@@ -231,18 +241,30 @@
                                     <input type="text" name="nama" class="form-control" required>
                                 </div>
                             </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Deskripsi</label>
+                                <textarea name="deskripsi" class="form-control" rows="2"></textarea>
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Satuan <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-tag"></i></span>
-                                    <input type="text" name="satuan" class="form-control" required>
+                                    <select name="satuan" class="form-select" required>
+                                        <option value="" selected disabled>-- Pilih Satuan --</option>
+                                        <option value="lembar">Lembar</option>
+                                        <option value="pcs">Pcs</option>
+                                        <option value="batang">Batang</option>
+                                        <option value="kotak">Kotak</option>
+                                        <option value="meter">Meter</option>
+                                        <option value="sak">Sak</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Kode <span class="text-danger">*</span></label>
+                                <label class="form-label">Kode</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-key"></i></span>
-                                    <input type="text" name="kode" class="form-control" required>
+                                    <input type="text" class="form-control" value="Dibuat otomatis" disabled>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">

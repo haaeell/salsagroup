@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -49,8 +50,7 @@ class RegisterController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'nama_depan' => ['required', 'string', 'max:255'],
-            'nama_belakang' => ['required', 'string', 'max:255'],
+            'nama' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'no_telepon' => ['required', 'string', 'max:20'],
@@ -67,14 +67,32 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        [$namaDepan, $namaBelakang] = array_pad(preg_split('/\s+/', trim($data['nama']), 2), 2, '');
+
         return User::create([
-            'nama_depan' => $data['nama_depan'],
-            'nama_belakang' => $data['nama_belakang'],
+            'nama_depan' => $namaDepan,
+            'nama_belakang' => $namaBelakang,
             'username' => $data['username'],
             'email' => $data['email'],
             'no_telepon' => $data['no_telepon'],
             'alamat' => $data['alamat'],
             'password' => Hash::make($data['password']),
+            'status' => 'pending',
         ]);
+    }
+
+    /**
+     * Registration must be approved by an admin before the account can log in.
+     */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        $this->create($request->all());
+
+        return redirect()->route('login')->with(
+            'success',
+            'Pendaftaran berhasil! Akun Anda menunggu persetujuan admin sebelum dapat digunakan untuk masuk.'
+        );
     }
 }

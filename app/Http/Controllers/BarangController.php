@@ -22,11 +22,11 @@ class BarangController extends Controller
     {
         $request->validate([
             'nama' => 'required|string|max:255',
-            'kode' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
             'kategori_id' => 'required|exists:kategori,id',
             'harga' => 'required|numeric|min:0',
             'batas_stok_minimum' => 'required|integer|min:0',
-            'satuan' => 'required|string|max:255',
+            'satuan' => 'required|in:lembar,pcs,batang,kotak,meter,sak',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'stok_awal' => 'nullable|integer|min:0',
             'harga_beli_awal' => [
@@ -42,7 +42,8 @@ class BarangController extends Controller
         DB::transaction(function () use ($request, $gambar, $stokAwal) {
             $barang = Barang::create([
                 'nama' => $request->nama,
-                'kode' => $request->kode,
+                'deskripsi' => $request->deskripsi,
+                'kode' => Barang::generateKode(),
                 'kategori_id' => $request->kategori_id,
                 'harga' => $request->harga,
                 'stok' => 0,
@@ -74,11 +75,12 @@ class BarangController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
             'kode' => 'required|string|max:255',
             'kategori_id' => 'required|exists:kategori,id',
             'harga' => 'required|numeric|min:0',
             'batas_stok_minimum' => 'required|integer|min:0',
-            'satuan' => 'required|string|max:255',
+            'satuan' => 'required|in:lembar,pcs,batang,kotak,meter,sak',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -91,6 +93,7 @@ class BarangController extends Controller
 
         $barang->update([
             'nama' => $request->nama,
+            'deskripsi' => $request->deskripsi,
             'kode' => $request->kode,
             'kategori_id' => $request->kategori_id,
             'harga' => $request->harga,

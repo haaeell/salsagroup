@@ -21,7 +21,7 @@ class KategoriController extends Controller
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $gambarPath = $request->file('gambar') ? $request->file('gambar')->store('kategori') : null;
+        $gambarPath = $request->file('gambar') ? $request->file('gambar')->store('kategori', 'public') : null;
 
         Kategori::create([
             'nama' => $request->nama,
@@ -40,9 +40,9 @@ class KategoriController extends Controller
 
         if ($request->hasFile('gambar')) {
             if ($kategori->gambar) {
-                Storage::delete($kategori->gambar);
+                Storage::disk('public')->delete($kategori->gambar);
             }
-            $kategori->gambar = $request->file('gambar')->store('kategori');
+            $kategori->gambar = $request->file('gambar')->store('kategori', 'public');
         }
 
         $kategori->nama = $request->nama;
@@ -54,7 +54,7 @@ class KategoriController extends Controller
     public function destroy(Kategori $kategori)
     {
         if ($kategori->gambar) {
-            Storage::delete($kategori->gambar);
+            Storage::disk('public')->delete($kategori->gambar);
         }
 
         $kategori->delete();

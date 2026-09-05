@@ -64,12 +64,19 @@
                                     <h6 class="fw-bold mb-1 text-truncate" title="{{ $item->nama }}">{{ $item->nama }}
                                     </h6>
                                     <small>Stock: {{ $item->stok }}</small><br>
+                                    <p class="text-muted small mb-1" style="min-height: 32px;">
+                                        {{ Str::limit($item->deskripsi, 60) ?: 'Tidak ada deskripsi' }}
+                                    </p>
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <p class="text-success fw-bold mb-0">Rp
                                             {{ number_format($item->harga, 0, ',', '.') }}</p>
                                         <p style="font-size: 10px" class="mb-0">{{ $item->kode }}</p>
                                     </div>
-                                    <button class="btn btn-sm btn-success w-100 mt-auto addToCartBtn"
+                                    <button class="btn btn-sm btn-outline-secondary w-100 mt-1 btnDetailProduk"
+                                        data-id="{{ $item->id }}">
+                                        <i class="bi bi-info-circle"></i> Detail
+                                    </button>
+                                    <button class="btn btn-sm btn-success w-100 mt-1 addToCartBtn"
                                         data-id="{{ $item->id }}" data-nama="{{ $item->kode }}"
                                         data-harga="{{ $item->harga }}">
                                         <i class="fas fa-cart-plus"></i> Tambah
@@ -172,8 +179,7 @@
 @push('scripts')
     <script>
         let cart = {};
-
-
+        let produkData = @json($barang->keyBy('id')->map(fn($b) => ['nama' => $b->nama, 'deskripsi' => $b->deskripsi]));
 
         function printStruk() {
             window.print();
@@ -251,6 +257,17 @@
                 updateCartTable();
             });
 
+            // Detail produk
+            $(document).on('click', '.btnDetailProduk', function() {
+                const id = $(this).data('id');
+                const produk = produkData[id] || {};
+                Swal.fire({
+                    title: produk.nama ?? 'Detail Produk',
+                    text: produk.deskripsi || 'Tidak ada deskripsi untuk produk ini.',
+                    icon: 'info'
+                });
+            });
+
             // Filter Kategori + Pencarian (gabungan)
             function cariProduk() {
                 const q = $('#searchInput').val();
@@ -270,6 +287,10 @@
             function renderProduk(res) {
                 let html = '';
                 res.forEach(item => {
+                    produkData[item.id] = {
+                        nama: item.nama,
+                        deskripsi: item.deskripsi
+                    };
                     html += `
         <div class="col-md-4 product-item" data-kategori="${item.kategori_id}">
             <div class="card h-100">
@@ -285,11 +306,17 @@
                     <div class="mt-auto">
                         <h6 class="fw-bold text-truncate mb-1" title="${item.nama}">${item.nama}</h6>
                         <small>Stock: ${item.stok}</small><br>
+                        <p class="text-muted small mb-1" style="min-height: 32px;">
+                            ${item.deskripsi ? (item.deskripsi.length > 60 ? item.deskripsi.slice(0, 60) + '...' : item.deskripsi) : 'Tidak ada deskripsi'}
+                        </p>
                         <div class="d-flex justify-content-between align-items-center mt-1">
                             <p class="text-success fw-bold mb-0">Rp ${item.harga.toLocaleString('id-ID')}</p>
                             <p style="font-size: 10px" class="mb-0">${item.kode}</p>
                         </div>
-                        <button class="btn btn-sm btn-success w-100 mt-2 addToCartBtn"
+                        <button class="btn btn-sm btn-outline-secondary w-100 mt-1 btnDetailProduk" data-id="${item.id}">
+                            <i class="bi bi-info-circle"></i> Detail
+                        </button>
+                        <button class="btn btn-sm btn-success w-100 mt-1 addToCartBtn"
                             data-id="${item.id}" data-nama="${item.nama}" data-harga="${item.harga}">
                             <i class="fas fa-cart-plus"></i> Tambah
                         </button>

@@ -59,36 +59,37 @@
                 <h5 class="mb-0">Info Stok Menipis</h5>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Barang</th>
-                                <th>Kode</th>
-                                <th>Stok</th>
-                                <th>Batas Minimum</th>
-                                <th>Satuan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($stokMenipis as $index => $barang)
+                @forelse ($stokMenipis as $namaKategori => $items)
+                    <h6 class="fw-bold mt-3 mb-2">{{ $namaKategori }}</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $barang->nama }}</td>
-                                    <td>{{ $barang->kode }}</td>
-                                    <td class="text-danger fw-bold">{{ $barang->stok }}</td>
-                                    <td>{{ $barang->batas_stok_minimum }}</td>
-                                    <td>{{ $barang->satuan }}</td>
+                                    <th>No</th>
+                                    <th>Nama Barang</th>
+                                    <th>Kode</th>
+                                    <th>Stok</th>
+                                    <th>Batas Minimum</th>
+                                    <th>Satuan</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center">Tidak ada barang dengan stok menipis.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach ($items as $barang)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $barang->nama }}</td>
+                                        <td>{{ $barang->kode }}</td>
+                                        <td class="text-danger fw-bold">{{ $barang->stok }}</td>
+                                        <td>{{ $barang->batas_stok_minimum }}</td>
+                                        <td>{{ $barang->satuan }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @empty
+                    <p class="text-center text-muted mb-0">Tidak ada barang dengan stok menipis.</p>
+                @endforelse
             </div>
         </div>
     @endif

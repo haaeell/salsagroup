@@ -10,6 +10,7 @@ class Barang extends Model
         'gambar',
         'kode',
         'nama',
+        'deskripsi',
         'kategori_id',
         'harga',
         'stok',
@@ -31,5 +32,24 @@ class Barang extends Model
     public function detailPesanan()
     {
         return $this->hasMany(DetailPesanan::class);
+    }
+
+    public static function generateKode(): string
+    {
+        $prefix = 'BRG';
+
+        $lastNumber = self::where('kode', 'like', $prefix . '-%')
+            ->get()
+            ->map(fn ($barang) => (int) substr($barang->kode, strlen($prefix) + 1))
+            ->max();
+
+        $next = ($lastNumber ?? 0) + 1;
+
+        do {
+            $kode = $prefix . '-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+            $next++;
+        } while (self::where('kode', $kode)->exists());
+
+        return $kode;
     }
 }

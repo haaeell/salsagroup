@@ -172,20 +172,31 @@
                     $no = 1;
                     $grandTotal = 0;
                 @endphp
-                @foreach ($data as $item)
-                    @foreach ($item->detailPesanan as $detail)
+                @forelse ($detailPemesanan ?? [] as $group)
+                    <tr>
+                        <th colspan="7">{{ $group['kategori'] }}</th>
+                    </tr>
+                    @foreach ($group['items'] as $item)
                         <tr>
                             <td>{{ $no++ }}</td>
-                            <td>{{ $item->order_id }}</td>
-                            <td>{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
-                            <td>{{ $detail->kode_barang }} - {{ $detail->nama_barang }}</td>
-                            <td>{{ $detail->jumlah }}</td>
-                            <td>Rp.{{ number_format($detail->harga, 0, ',', '.') }}</td>
-                            <td>Rp.{{ number_format($detail->jumlah * $detail->harga, 0, ',', '.') }}</td>
+                            <td>{{ $item['order_id'] }}</td>
+                            <td>{{ date('d/m/Y', strtotime($item['tanggal'])) }}</td>
+                            <td>{{ $item['kode_barang'] }} - {{ $item['nama_barang'] }}</td>
+                            <td>{{ $item['jumlah'] }}</td>
+                            <td>Rp.{{ number_format($item['harga'], 0, ',', '.') }}</td>
+                            <td>Rp.{{ number_format($item['total'], 0, ',', '.') }}</td>
                         </tr>
-                        @php $grandTotal += $detail->jumlah * $detail->harga; @endphp
+                        @php $grandTotal += $item['total']; @endphp
                     @endforeach
-                @endforeach
+                    <tr class="summary-row">
+                        <td colspan="6" class="text-right">Subtotal {{ $group['kategori'] }}</td>
+                        <td>Rp.{{ number_format($group['total'], 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center">Tidak ada data.</td>
+                    </tr>
+                @endforelse
             </tbody>
             <tfoot>
                 <tr>

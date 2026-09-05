@@ -29,6 +29,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('pesanan', PesananController::class);
     Route::post('/pesanan-admin', [PesananController::class, 'storeAdmin'])->name('pesanan.storeAdmin');
     Route::resource('users', UserController::class);
+    Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
 
     Route::get('/cari-produk', [PesananController::class, 'cari'])->name('produk.cari');
     Route::get('/riwayat-pesanan', [RiwayatPesananController::class, 'index'])->name('riwayat-pesanan.index');

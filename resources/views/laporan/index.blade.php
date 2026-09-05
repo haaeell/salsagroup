@@ -622,7 +622,7 @@
                             </tfoot>
                         </table>
                     @else
-                        <table class="table table-bordered align-middle" id="datatable">
+                        <table class="table table-bordered align-middle" id="detailPemesananTable">
                             <thead class="table-light">
                                 <tr class="text-center">
                                     <th>No</th>
@@ -639,23 +639,38 @@
                             </thead>
                             <tbody>
                                 @php $no = 1; @endphp
-                                @foreach ($data as $item)
-                                    @foreach ($item->detailPesanan as $detail)
+                                @forelse ($detailPemesanan as $group)
+                                    <tr class="table-light">
+                                        <th colspan="{{ $jenis === 'pemesanan' ? 8 : 7 }}">{{ $group['kategori'] }}
+                                        </th>
+                                    </tr>
+                                    @foreach ($group['items'] as $item)
                                         <tr class="text-start">
                                             <td>{{ $no++ }}</td>
-                                            <td>{{ $item->order_id }}</td>
-                                            <td>{{ date('d/m/Y', strtotime($item->tanggal)) }}</td>
-                                            <td>{{ $detail->kode_barang }} - {{ $detail->nama_barang }}</td>
-                                            <td>{{ $detail->jumlah }}</td>
-                                            <td>Rp.{{ number_format($detail->harga, 0, ',', '.') }}</td>
-                                            <td>Rp.{{ number_format($detail->jumlah * $detail->harga, 0, ',', '.') }}</td>
+                                            <td>{{ $item['order_id'] }}</td>
+                                            <td>{{ date('d/m/Y', strtotime($item['tanggal'])) }}</td>
+                                            <td>{{ $item['kode_barang'] }} - {{ $item['nama_barang'] }}</td>
+                                            <td>{{ $item['jumlah'] }}</td>
+                                            <td>Rp.{{ number_format($item['harga'], 0, ',', '.') }}</td>
+                                            <td>Rp.{{ number_format($item['total'], 0, ',', '.') }}</td>
                                             @if ($jenis === 'pemesanan')
-                                                <td>Rp.{{ number_format($detail->jumlah * ($detail->harga - $detail->harga_modal), 0, ',', '.') }}
-                                                </td>
+                                                <td>Rp.{{ number_format($item['laba'], 0, ',', '.') }}</td>
                                             @endif
                                         </tr>
                                     @endforeach
-                                @endforeach
+                                    <tr class="summary-row">
+                                        <td colspan="6" class="text-end">Subtotal {{ $group['kategori'] }}:</td>
+                                        <td>Rp.{{ number_format($group['total'], 0, ',', '.') }}</td>
+                                        @if ($jenis === 'pemesanan')
+                                            <td>Rp.{{ number_format($group['laba'], 0, ',', '.') }}</td>
+                                        @endif
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ $jenis === 'pemesanan' ? 8 : 7 }}" class="text-center">
+                                            Tidak ada data.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                             <tfoot>
                                 <tr>

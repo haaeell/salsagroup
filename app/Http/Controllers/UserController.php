@@ -72,4 +72,19 @@ class UserController extends Controller
         $user->delete();
         return redirect()->back()->with('success', 'User berhasil dihapus');
     }
+
+    public function updateStatus(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+        ]);
+
+        $user->update(['status' => $request->status]);
+
+        $message = $request->status === 'approved'
+            ? 'Akun user berhasil disetujui'
+            : 'Akun user ditolak';
+
+        return redirect()->back()->with('success', $message);
+    }
 }

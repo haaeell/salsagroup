@@ -105,6 +105,7 @@ class LaporanController extends Controller
         $trend = collect();
         $topProduk = collect();
         $kategoriBreakdown = collect();
+        $detailPemesanan = collect();
 
         $status = $jenis === 'pemesanan' ? 'selesai' : null;
 
@@ -163,6 +164,8 @@ class LaporanController extends Controller
                 ])
                 ->sortByDesc('total')
                 ->values();
+
+            $detailPemesanan = $this->buildDetailPemesananByKategori($data);
         }
 
         return [
@@ -171,6 +174,7 @@ class LaporanController extends Controller
             'trend' => $trend,
             'topProduk' => $topProduk,
             'kategoriBreakdown' => $kategoriBreakdown,
+            'detailPemesanan' => $detailPemesanan,
             'annualReport' => null,
         ];
     }
@@ -184,6 +188,7 @@ class LaporanController extends Controller
         $trend = collect();
         $topProduk = collect();
         $kategoriBreakdown = collect();
+        $detailPemesanan = collect();
 
         if ($status && count($bulanDipilih) > 0) {
             $data = Pesanan::with('detailPesanan.barang.kategori')
@@ -221,6 +226,8 @@ class LaporanController extends Controller
                     'jumlah_pesanan' => $monthRow['jumlah_pesanan'],
                 ];
             });
+
+            $detailPemesanan = $this->buildDetailPemesananByKategori($data);
         }
 
         return [
@@ -229,6 +236,7 @@ class LaporanController extends Controller
             'trend' => $trend,
             'topProduk' => $topProduk,
             'kategoriBreakdown' => $kategoriBreakdown,
+            'detailPemesanan' => $detailPemesanan,
             'annualReport' => $annualReport,
         ];
     }
@@ -370,6 +378,36 @@ class LaporanController extends Controller
         }
 
         return $detail->jumlah * $detail->harga_modal;
+    }
+
+    private function buildDetailPemesananByKategori(Collection $orders): Collection
+    {
+        $barangByKode = Barang::with('kategori')->get()->keyBy('kode');
+
+        return $orders->flatMap(function ($order) use ($barangByKode) {
+            return $order->detailPesanan->map(function ($detail) use ($order, $barangByKode) {
+                return [
+                    'kategori' => $this->categoryNameForDetail($detail, $barangByKode),
+                    'order_id' => $order->order_id,
+                    'tanggal' => $order->tanggal,
+                    'kode_barang' => $detail->kode_barang,
+                    'nama_barang' => $detail->nama_barang,
+                    'jumlah' => $detail->jumlah,
+                    'harga' => $detail->harga,
+                    'total' => $detail->jumlah * $detail->harga,
+                    'laba' => $detail->jumlah * ($detail->harga - $detail->harga_modal),
+                ];
+            });
+        })
+            ->groupBy('kategori')
+            ->map(fn($items, $kategori) => [
+                'kategori' => $kategori,
+                'items' => $items->values(),
+                'total' => $items->sum('total'),
+                'laba' => $items->sum('laba'),
+            ])
+            ->sortBy('kategori')
+            ->values();
     }
 
     private function categoryNameForDetail($detail, Collection $barangByKode): string

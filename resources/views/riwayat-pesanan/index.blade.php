@@ -14,6 +14,21 @@
         </div>
 
         <div class="card-body">
+            <ul class="nav nav-pills mb-3" id="statusTabs">
+                <li class="nav-item">
+                    <button type="button" class="nav-link active" data-status="">Semua</button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" data-status="proses">Proses</button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" data-status="selesai">Selesai</button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="nav-link" data-status="batal">Batal</button>
+                </li>
+            </ul>
+
             <table class="table table-bordered table-hover" id="datatable">
                 <thead class="text-center">
                     <tr>
@@ -57,14 +72,19 @@
                             <td>{{ $item->catatan }}</td>
                             <td class="d-flex flex-column gap-2">
                                 @if ($item->status == 'proses')
-                                    <button class="btn btn-success" data-bs-toggle="modal"
-                                        data-bs-target="#modalDone{{ $item->id }}">
-                                        <i class="fa fa-check"></i> Selesaikan
-                                    </button>
-                                    <button class="btn btn-warning" data-bs-toggle="modal"
-                                        data-bs-target="#modalCancel{{ $item->id }}">
-                                        <i class="fa fa-times"></i> Batalkan
-                                    </button>
+                                    @if (Auth::user()->role == 'admin')
+                                        <button class="btn btn-success" data-bs-toggle="modal"
+                                            data-bs-target="#modalDone{{ $item->id }}">
+                                            <i class="fa fa-check"></i> Selesaikan
+                                        </button>
+                                        <button class="btn btn-warning" data-bs-toggle="modal"
+                                            data-bs-target="#modalCancel{{ $item->id }}">
+                                            <i class="fa fa-times"></i> Batalkan
+                                        </button>
+                                    @else
+                                        <p class="text-warning mb-0"><i class="fa fa-clock"></i> Menunggu Diproses
+                                        </p>
+                                    @endif
                                 @elseif ($item->status == 'selesai')
                                     <p class="text-success mb-0"><i class="fa fa-check"></i> Pesanan Selesai</p>
                                 @else
@@ -140,6 +160,7 @@
     @endif
 
     @foreach ($pesanan as $item)
+        @if (Auth::user()->role == 'admin')
         <div class="modal fade" id="modalDone{{ $item->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <form action="{{ route('pesanan.update', $item->id) }}" method="POST" enctype="multipart/form-data"
@@ -251,6 +272,7 @@
                 </form>
             </div>
         </div>
+        @endif
 
         <div class="modal fade" id="modalDetail{{ $item->id }}" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -328,6 +350,20 @@
         </div>
     @endforeach
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            const table = $('#datatable').DataTable();
+
+            $('#statusTabs .nav-link').on('click', function() {
+                $('#statusTabs .nav-link').removeClass('active');
+                $(this).addClass('active');
+                table.column(2).search($(this).data('status') ?? '').draw();
+            });
+        });
+    </script>
+@endpush
 
 @if (Auth::user()->role == 'admin')
     @push('scripts')

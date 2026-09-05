@@ -135,6 +135,10 @@ class PesananController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         $pesanan = Pesanan::findOrFail($id);
 
         $request->validate([

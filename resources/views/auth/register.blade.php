@@ -12,8 +12,7 @@
                             <div class="row g-3">
                                 @php
                                     $fields = [
-                                        ['nama_depan', 'Nama Depan', 'person'],
-                                        ['nama_belakang', 'Nama Belakang', 'person'],
+                                        ['nama', 'Nama Lengkap', 'person'],
                                         ['username', 'Username', 'person-circle'],
                                         ['email', 'Email', 'envelope'],
                                         ['no_telepon', 'No Telepon', 'telephone'],
@@ -63,6 +62,9 @@
 
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-danger px-4 py-2 w-100">Daftar</button>
+                                <small class="text-muted d-block text-center mt-2">
+                                    Akun baru perlu disetujui admin sebelum dapat digunakan untuk masuk.
+                                </small>
                             </div>
                         </form>
                     </div>
